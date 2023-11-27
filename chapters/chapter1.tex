@@ -1,112 +1,119 @@
 \chapter{Introduction}
 \label{chap:intro}
 \chaptermark{Optional running chapter heading}
-\section{Spacing \& Type}
-\label{sec:section}
 
-This is a section. This is a citation without brackets. and this is one with brackets \cite{A}. Multiple \cite{A,B,C} Here's a reference to a subsection: \ref{sec:subsection}. Citation of an online article \cite{D}. Citation of an online proceeding \cite{F}. The body of the text and abstract must be double-spaced except for footnotes or long quotations. Fonts such as Times Roman, Bookman, New Century Schoolbook, Garamond, Palatine, and Courier are acceptable and commonly found on most computers. The same type must be used throughout the body of the text. The font size must be 10 point or larger and footnotes\footnote{This is a footnote.} must be two sizes smaller than the text\footnote{This is another footnote.} but no smaller than eight points. Chapter, section, or other headings should be of a consistent font and size throughout the ETD, as should labels for illustrations, charts, and figures.
+Nowadays, wireless local area networks (WLAN) implementing IEEE 802.11 standards, which are commonly known under "Wi-Fi" brand, become an increasingly popular solution for last-mile internet access with a diverse population of users, starting from home Wi-Fi routers up to large campus- and city-scale WLANs with coverage areas reaching several square kilometers.
+As a result, the density of Wi-Fi network increases, so the frequency band allocated for 802.11 networks becomes more congested, which leads to interference and signal cancellation between different WLANs, resulting in network performance degradation.
+Moreover, other appliances operating on frequencies that overlap with Wi-Fi band, undermining the performance of WLANs.
+This situation has led to a growing demand for Radio Resource Management (RRM) solutions, especially for large enterprise-grade multi-AP WLAN deployments. However, existing solutions offered by major vendors are proprietary, so their source code, used algorithms and details of operation are not disclosed.
+In this Thesis, we present an implementation of a Radio Resource Management algorithm that is intended to be more effective then available predecessors while putting practical applicability in the first place.
 
-\subsection{Creating a Subsection}
-\label{sec:subsection}
+Our approach benefits from the employment of Wireless LAN Controller (WLC) — a central entity in the WLAN architecture that is able to control and gather statistics from all the access points.
+The rest of this Thesis is structured as follows: Chapter \ref{chap:lr} reviews existing academic research on managing radio resources and publicly available information about proprietary RRM solutions; in Chapter 3, we formulate the mathematical model of transmission in a wireless network, review the existing RRM algorithm at Wimark Systems, identify its weaknesses and derive a new algorithm; in Chapter 4, we describe implementation details for the algorithm in NS-3 simulator and Wimark products; in Chapter 5, we evaluate the performance of our algorithm; Chapter 6 contains the results and discussion.
 
-\subsubsection{Creating a Subsubsection}
-\subsubsection{Creating a Subsubsection}
-\subsubsection{Creating a Subsubsection}
+Below in this chapter, we briefly review the fundamentals of Radio Frequency (RF) communications, and IEEE 802.11 standard for wireless LAN.
 
-\paragraph{This is a heading level below subsubsection}
+\section{Overview of IEEE 802.11 standard}
 
-And this is a quote: 
-%
-\begin{quote}
-\blindtext
-\end{quote}
+Throughout this Thesis, we will refer to field-specific terms, whose definitions are given in Table \ref{defs_table}:
 
-\begin{figure}[hbt]
-\centering
-\includegraphics[]{figs/inno.png}
-\caption{One kernel at $x_s$ (\emph{dotted kernel}) or two kernels at
-$x_i$ and $x_j$ (\textit{left and right}) lead to the same summed estimate
-at $x_s$. This shows a figure consisting of different types of
-lines. Elements of the figure described in the caption should be set in
-italics, in parentheses, as shown in this sample caption.}
-\label{fig:example}
-\end{figure}
-
-This is a table:
-% currsize is not set in the long table environment, so we need to set it before we set it up.
 \makeatletter
 \let\@currsize\normalsize
 \makeatother
+\label{defs_table}
+\begin{table}[h]
+    \centering
+    \begin{tabular}{| p{0.5\linewidth} | p{0.5\linewidth} |}\hline
+        \textbf{Term} & \textbf{Definition} \\ \hline
+        Signal & Airborne RF energy \\
+        \hline
+        Channel & A band of frequencies that 802.11 devices can use for communications \cite{AuthoritativeDictionaryIEEE2000} \\
+        \hline
+        Inteference & Destructive influence of another signal leading to degradation of signal quality and loss of frames \\
+        \hline
+        Noise & Signal that cannot be demodulated as 802.11 signal \\
+        \hline
+        SNR (Signal-to-Noise Ratio) & Signal quality metric, defined as ratio of signal power to the noise \\
+        \hline
+        SINR (Signal-to-Interference-plus-Noise Ratio) & b4 \\
+        \hline
+        RSSI (Received Signal Strength Indicator) & quality metric of a wireless signal \\
+        \hline
+        Radio cell & A geographical area covered by a radio transmitter \cite{tanenbaumComputerNetworks2020} \\
+        \hline
+        Basic Service Set (BSS) & A set of stations belonging to the same radio cell and exchanging information \cite{konsgenSpectrumManagementAlgorithms2010} \\
+        \hline
+        Distribution System (DS) & A network that interconnects multiple BSSs and provides connectivity to a wired network \cite{konsgenSpectrumManagementAlgorithms2010} \\
+        \hline
+        Extended Service Set (ESS) & A set of BSSs interconnected by a DS \cite{konsgenSpectrumManagementAlgorithms2010} \\
+        \hline
+        Infrastructure mode & A centralized mode of a 802.11 WLAN operation using a star topology, where AP serves as a central entity for managing WLAN and switching traffic \\
+        \hline
+        Station (STA) & A client device that can connect to a WLAN \\
+        \hline
+        Access Point (AP) & A device that provides wireless access to a wired network \\
+        \hline
+        Network capacity & Maximum transmission rate that any station can achieve in a given WLAN \\
+        \hline
+    \end{tabular}
+    \caption{Used terms and definitions}
+    \label{tab:my_label}
+\end{table}
 
-% tabular environments are set to be single-spaced in the  thesis class,  but long tables do not use tabular
-% to get around this, set the spacing to single spacing at the start of the long table environment, and set it back to double-spacing at the end of it
+\subsection{Transmission medium}
 
-\begin{longtable}{c|c|c}
-\caption[This is the title I want to appear in the List of Tables]{This Is a Table Example} \label{tab:pfams} \\
-\hline
-A & B & C \\
-\hline
-\endfirsthead
-\multicolumn{3}{@{}l}{} \\
-\hline
-A & B & C\\
-\hline
-\endhead
-a1 & b1 & c1 \\
-a2 & b2 & c2\\
-a3 & b3 & c3\\
-a4 & b4 & c4\\
-\hline
-\end{longtable}
+The primary medium for communications in IEEE 802.11 are electromagnetic (EM) radio-frequency (RF) waves operating within the microwave range \cite{tanenbaumComputerNetworks2020}. Infrared radiation (IR) as a transmissions medium was defined in the legacy 802.11 standard and then had been deprecated; 802.11bb amendment, introducing communications through visible light, is yet to be finalized and become commercially mature technology.
 
-The package ``upgreek'' allows us to use non-italicized lower-case greek letters. See for yourself: $\upbeta$, $\bm\upbeta$, $\beta$, $\bm\beta$. Next is a numbered equation:
-\begin{align}
-\label{eq:name}
-\|\bm{X}\|_{2,1}={\underbrace{\sum_{j=1}^nf_j(\bm{X})}_{\text{convex}}}=\sum_{j=1}^n\|\bm{X}_{.,j}\|_2
-\end{align}
-The reference to equation (\ref{eq:name}) is clickable. 
-\section[Theorems, Corollaries, Lemmas, Proofs, Remarks, Definitions and Examples]{Theorems, Corollaries, Lemmas, Proofs, Remarks, Definitions,and Examples}
+\subsection{Frequency band}
 
-\begin{theorem}
-\label{thm:onlytheorem}
-\blindtext
-\end{theorem}
+Most of the 802.11 amendments, including b,g,n, and partially ax, operate at the unlicensed 2.4 GHz ISM (Industrial, Scientific, Medical) RF band \cite{tanenbaumComputerNetworks2020, colemanCWNACertifiedWireless2021}. Using an unlicensed frequency band, however, introduces multiple challenges: the radio spectrum becomes congested with non-802.11 sources, such as microwave ovens, Bluetooth Personal Area Networks (PAN), cordless phones etc. \cite{tanenbaumComputerNetworks2020, colemanCWNACertifiedWireless2021}. Moreover, 2.4 GHz signals can propagate through solid obstructions like walls, doors, and windows better than signals operating on higher-frequency ones \cite{colemanCWNACertifiedWireless2021}. This property can provide better coverage and signal quality for clients, although can cause interference for neighboring WLANs, which will in turn lead to degradation of signal quality.
 
-\begin{proof}
-I'm a (very short) proof.
-\end{proof}
+2.4 GHz band is split into 14 channels, each 22 MHz wide [1]. Each channel is characterized by its \textit{center frequency}, +- 11 MHz, with 5 MHz width between two adjacent centers, i.e, the channels \textit{overlap}. Channel 1 has central frequency 2.412 GHz, Channel 14 — 2.484 GHz. Thus, for channels to be non-overlapping, they must have at least 5 channels in between. Such non-overlapping channels are 1, 6, 11, with central frequencies 2.412, 2.437, and 2.462 MHz, respectively.
 
-\begin{lemma}
-I'm a lemma.
-\end{lemma}
+Another frequency band is used by 802.11a/ac/ax radios is 5 GHz U-NII.
 
-\begin{corollary}
-I include a reference to Thm. \ref{thm:onlytheorem}.
-\end{corollary}
+\subsection{Signal quality and its metrics}
 
-\begin{proposition}
-I'm a proposition.
-\end{proposition}
+Thus, the presence of physical obstructions, background noise and interference from other access points urges us to explore possible measurements and metrics for a wireless signal quality. Below, we will briefly describe the most widely used quantities:
 
-\begin{remark}
-I'm a remark. 
-\end{remark}
+A measure widely used in RF engineering and employed by Wi-Fi vendors is \textbf{Signal-to-Noise Ratio (SNR)}, which is defined as a ratio between the received signal power and the power of background noise [2]:
+\begin{equation}
+    \label{formula:snr}
+    SNR = \frac{P_{signal}}{P_{noise}}
+\end{equation}
+    Since SNR is essentially a difference in power, which is measured in Watts, in practice it is measured in a relative unit on a logarithmic scale called \textbf{decibel (dB)} [1,2]:
 
-\begin{definition}
-I'm a definition. I'm a definition. I'm a definition. I'm a definition. I'm a definition. I'm a definition. I'm a definition. I'm a definition. I'm a definition. I'm a definition. I'm a definition. 
-\end{definition}
+\begin{equation}
+    \label{formula:snr_db}
+    {SNR}_{dB} = 10\log_{10}\frac{P_{signal}}{P_{noise}}
+\end{equation}
 
-\begin{example}
-I'm an example.
-\end{example}
+In recent years, \textbf{Signal-to-Interference-Plus-Noise ratio (SINR)} measurement have become a more widespread measurement of wireless networks\' signal quality. Similarly, it is defined as:
 
+\begin{equation}
+    \label{formula:sinr}
+    SINR = \frac{P_{signal}}{P_{noise} + P_{interf}}
+\end{equation}
 
-\section[Optional table of contents heading]{Section with\\ linebreaks in\\the
-name}
+    where $P_{signal}$ is the power of the signal of interest, and $P_{interf}$ is the power of interfering signals.
+    By considering interference from other 802.11 devices, which is typically a dynamic quantity that changes rapidly over time unlike background noise, SINR describes EM spectrum situation more accurately.
 
+Received Signal Strength Indicator (RSSI) relative measure of signal strength in range from 0 to 255, where 0 is the weakest signal a receiver is able to sense. The exact correspondence between RSSI and received signal power is implementation-specific and is left on behalf of hardware manufacturers [1].
 
-\Blindtext[2]
+\subsection{Radio Resource Management}
+\label{chap:intro:sec:rrm}
+The scarcity of available frequency bands in the time of growing demand for wireless connectivity has led to the development of methods called \textit{spectrum management} or \textit{radio resource management (RRM)}. Most of research on RRM is focused on cellular networks, where coverage area of base stations spans across multiple kilometers, and the number of clients for one station can reach several thousands, so proper spectrum management is vital for operation of cells. However, from the physical layer perspective, the radio situation in 802.11 networks is similar. As described in \cite{zanderRadioResourceManagement1997}, given a wireless network with a set of access points $\boldsymbol{B}$, which can communicate over a set of channels $\boldsymbol{C}$, with a maximum transmit power of $P_{max}$, establishing a radio link between a client device and an access point requires from the wireless infrastructure to assign:
+\begin{enumerate}
+    \item An access point $b \in \boldsymbol{B}$;
+    \item A frequency channel $c \in \boldsymbol{C}$;
+    \item A transmission power level $ p \leq P_{max}$.
+\end{enumerate}
+Obviously, channel and transmission power are \textit{global} for a given access point in a sense that all its other clients will have to adjust their parameters correspondingly: switch the operating channel and deal with the new received signal strength from their AP.
+In Wi-Fi, the first requirement is usually decided by the client itself: user chooses SSID they wish to use, and in case if multiple APs serve the same SSID, a client device associates with AP having the strongest signal available. Later, a client can switch to another access point within the same extended service set via \textit{roaming} methods, such as \textit{Fast Basic Service Set (BSS) Transition} defined in 802.11r \cite{80211r}. The roaming decision is ultimately made by a client device, which sends a reassociation request to start the roaming process \cite{colemanCWNACertifiedWireless2021}. The access point, however, can force a client to find another access point by sending a deauthentication frame, or moving to another channel without notifying.
+The second and third requirements are a part of current AP configration and a subject to change. A client discovers current operating channel of APs by tuning on each available channel in a succession, while transmission power only can be estimated by measuring received signal strength.
+Thus, \textbf{the goal of a radio resource allocation algorithm is to optimize spectrum usage within a WLAN via assigning an operating channel and a transmission power level to each access point in a way that maximizes the overall network performance.}
 
+As it will be shown in Section \ref{chap:lr:sec:rrm_80211}, the 802.11 standard does not provide any algorithms for channel and transmission power assignment, however, some amendments introduce methods for measurement, signaling and radio adjustment that can be used for RRM purposes.
 
-
-
+Note that related researches and commercial solutions introduce many different terms for the same procedure of channel change that can use different algorithms and slightly vary according to specifics of their application: \textit{Frequency Selection}, \textit{Frequency Planning}, \textit{Channel Selection}, \textit{Channel Planning}, \textit{Channel Assignment}, etc. Adjustment of transmission power is usually
+In this Thesis, we consider those terms to be synonyms.

@@ -2,8 +2,10 @@
 
 % # set the compiler XeLatex to use fontspec package
 \usepackage{fontspec}
+\usepackage{tempora}
+\usepackage{newtxmath}
 
-\setmainfont{Times New Roman}
+%\setmainfont{Times New Roman}
 
 \usepackage{vmargin}
 \setpapersize{A4}
@@ -19,7 +21,7 @@
 \renewcommand{\ttdefault}{pcr}
 %%%%% END %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{atbegshi,picture}
-\usepackage[T1,T2A]{fontenc}
+\usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \AtBeginShipout{\AtBeginShipoutUpperLeft{%
   \put(\dimexpr\paperwidth-1cm\relax,-1.5cm){\makebox[0pt][r]{\includegraphics[width=3cm]{figs/inno}}}%
@@ -29,6 +31,7 @@
 \usepackage[english]{babel}
 \usepackage[backend=biber,style=ieee,autocite=inline]{biblatex}
 \bibliography{ref.bib}
+\bibliography{RRM.bib}
 \DefineBibliographyStrings{english}{%
   bibliography = {References},}
 \usepackage{blindtext}
@@ -39,6 +42,7 @@
 \usepackage{amsmath,amsfonts}
 \usepackage{url}
 
+\let\openbox\relax
 \usepackage{amsthm}
 \newtheorem{theorem}{Theorem}
 \newtheorem{corollary}{Corollary}
@@ -72,7 +76,8 @@
 % \usepackage{t1enc}
 
 \usepackage{chngcntr}
-\usepackage{upgreek} 
+\usepackage{upgreek}
+\usepackage{tabularx}
 \usepackage{bm}
 \usepackage{hyperref}
 \usepackage{setspace}
@@ -134,7 +139,7 @@
 
 \begin{document}
 
-\includepdf[pages=-]{title.pdf}
+\includepdf[offset=70 -60]{title.pdf}
 \tableofcontents
 \listoftables
 \listoffigures
@@ -145,14 +150,14 @@
 \setcounter{page}{8} % set manually an actual number from which introduction starts
 \include{chapters/chapter1}
 \include{chapters/chapter2}
-\include{chapters/chapter3}
-\include{chapters/chapter4}
-\include{chapters/chapter5}
-\include{chapters/chapter6}
+% \include{chapters/chapter3}
+% \include{chapters/chapter4}
+% \include{chapters/chapter5}
+% \include{chapters/chapter6}
 
 
 %% REFERENCES
 \printbibliography[heading=bibintoc,title={Bibliography cited}]
-\include{chapters/appex}
+%\include{chapters/appex}
 \end{document}
 

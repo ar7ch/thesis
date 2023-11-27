@@ -1,68 +1,96 @@
 \chapter{Literature Review}
 \label{chap:lr}
-\chaptermark{Second Chapter Heading}
+\chaptermark{}
+The purpose of this chapter is to explore existing approaches on Radio Resource Management in IEEE 802.11 networks, including surveying what is proposed as a part of the 802.11 standard itself, what research has been done and what is offered by existing commercial solutions. This chapter is organized as follows:
+\begin{itemize}
+    \item Section \ref{chap:lr:sec:rrm_80211} provides an overview how radio resource management is facilitated within the IEEE 802.11 standard;
+    \item Section \ref{chap:lr:sec:prev_works} provides a synthesis on previous research in radio resource management;
+    \item Section \ref{chap:lr:sec:prop_rrm} provides an overview of proprietary RRM solutions from major vendors;
+    \item Section \ref{chap:lr:sec:conclusion} summarizes the chapter.
+\end{itemize}
+Table \ref{defs_table} contains the list of definitions used in this chapter.
+
+\section {Radio Resource Management in IEEE 802.11}
+\label{chap:lr:sec:rrm_80211}
+As discussed in Section \ref{chap:intro:sec:rrm}, a radio resource allocation algorithm aims to optimize network capacity through optimizing spectrum usage by adjusting two parameters: frequency and transmission power of each access point. In this section, we provide an overview of how radio resource management is facilitated within the IEEE 802.11 standard.
+
+\subsection {IEEE 802.11h}
+\label{chap:lr:sec:80211h}
+To comply with legal requirements on transmissions in 5 GHz, 802.11h-2003 \cite{80211h} amendment (\textit{Spectrum and Transmit Power Management Extensions}) was introduced. Since the goal of this amendment is to prevent legacy 802.11a 5GHz APs from interference with radars, 802.11h is not oriented for optimizing capacity of a wireless network. However, 802.11h introduces \cite{konsgenSpectrumManagementAlgorithms2010} spectrum management methods, namely, \textit{Dynamic Frequency Selection (DFS)}, facilitating automatic change of AP's operating frequency, and \textit{Transmit Power Control (TPC)}, adjusting the power of AP's transmitter. Those methods can be further used in implementation of radio resource management algorithms.
+
+% \subsubsection{Dynamic Frequency Selection}
+% \label{chap:lr:sec:80211h:dfs}
 
 
-\Blindtext[2]
+% \subsubsection{Transmit Power Control}
 
-\section{Another Section}
-\Blindtext[1]
-\newpage
-With the widespread of computing systems, information processing, and net working, the practice of replacing paper documentation to electronic documentation has become more and more common. Electronic documentation within the workplace has several advantages over the traditional one, such as being easy to share, copy and edit the document. However, these advantages also present a problem. A malefactor, having access to the system, can easily copy and leak the document, without leaving any trace. Such actions are virtually undetectable in most systems, so, the malefactor goes unpunished. In this thesis, we propose one solution to the problem: digital watermarking. 
+% \subsection {IEEE 802.11k}
+% \label{chap:lr:sec:80211k}
+% The amendment 802.11k-2008 \cite{80211k} (\textit{Radio Resource Measurement}, not to be confused with \textit{Radio Resource Management}) introduces a set of measurements that can be performed by an AP and reported to a WLAN controller. These measurements include:
 
-Every electronic document within the protected system is marked with an invisible digital watermark, containing information about the user, accessing this particular document. Therefore, in case the protected company discovers the leaked document, they will be able to identify the machine of the malicious person and time when the document was leaked. This will allow inflicting punishment on the malefactor, recovering the costs of the leak, and potentially preventing future ones. 
 
-\begin{longtable}{c|c}
-\caption[This is the title I want to appear in the List of Tables]{Simulation Parameters} \label{table:secsimulation_params} \\
-\hline
-A & B  \\
-\hline
-\endfirsthead
-\multicolumn{2}{@{}l}{} \\
-\hline
-A & B \\
-\hline
-\endhead
-\hline
- \textbf{Parameter} & \textbf{Value}\\
- \hline
- Number of vehicles & $|\mathcal{V}|$\\
- \hline
- Number of RSUs & $|\mathcal{U}|$\\
- \hline
- RSU coverage radius & 150 m\\
- \hline
- V2V communication radius & 30 m\\
- \hline
- Smart vehicle antenna height & 1.5 m\\
- \hline
- RSU antenna height & 25 m\\
- \hline
- Smart vehicle maximum speed & $v_{max}$ m/s\\
- \hline
- Smart vehicle minimum speed & $v_{min}$ m/s\\
- \hline
- Common smart vehicle cache capacities & $[50, 100, 150, 200, 250]$ mb\\
- \hline
- Common RSU cache capacities & $[5000,1000,1500,2000,2500]$ mb\\
- \hline
- Common backhaul rates & $[75, 100, 150]$ mb/s\\
- \hline
-\end{longtable}
+\section {Previous Works}
+\label{chap:lr:sec:prev_works}
+Interference from other Access Points poses a serious obstacle \cite{suiHowBadAre2015} for delivering acceptable quality of service in large 802.11 WLAN deployments. Although the 802.11 carrier-sense MAC protocol is designed to be resilient to interference, improper placement of APs leads to considerable degradation of WLAN performance due to co-channel interference \cite{levantiCAPWAPCompliantSolutionRadio2007}. However, for interference between cells within a WLAN, such problem in principle can be solved by proper \cite{site surveying}, i.e. planning of geographical placement of cells. Another major source of interference is \text{rogue APs}, which are operated by third parties and in general are not under control of WLAN administrators. Note that rogue APs are not assumed to be malicious and not posing threats other than congesting channels and occuping airtime. According to \cite{suiHowBadAre2015}, interference from rogue APs can introduce up to 50\% delays in a WLAN. Moreover, the prevalent amount (more than 70\%) of rogue APs are stationary \cite{suiHowBadAre2015}, so their radio presence can be considered as a constant factor in the WLAN.
+In this light, attempts to improve spectrum management via channel assignment and transmit power control adjustment algorithms encompass research on Radio Resource Management algorithms. As shown in Section \ref{chap:lr:sec:rrm_80211}, the IEEE 802.11 standard provides a limited set of tools for radio resource managemens, leaving assignment algorithms and policies on behalf of WLAN equipment vendors. As reported in \cite{suiHowBadAre2015}, Cisco's RRM software, shipped with Cisco Aironet APs and Cisco WLAN Controller, was able to improve network performance using Dynamic Channel Selection (DFS) and Transmit Power Control (TPC)  so that carrier sense interference was responsible for only 5\% of network delays. RRM solutions from Cisco and other vendors will be surveyed in Section \ref{chap:lr:sec:prop_rrm}. However, since this technology is proprietary, implementation details are not disclosed, while there probably could be vast space for improvement of algorithms. Moreover, such solutions do not possess interoperability with networking products from other vendors, which is a major obstacle for large-scale WLAN deployments and leads to vendor lock-in situations. Thus, research on radio resource management algorithms, especially ones is of great importance for the industry.
 
-\begin{figure}[hbt]
-\centering
-\includegraphics[]{figs/inno.png}
-\caption{One kernel at $x_s$ (\emph{dotted kernel}) or two kernels at
-$x_i$ and $x_j$ (\textit{left and right}) lead to the same summed estimate
-at $x_s$. This shows a figure consisting of different types of
-lines. Elements of the figure described in the caption should be set in
-italics, in parentheses, as shown in this sample caption.}
-\label{fig:secex}
-\end{figure}
+\subsection {Radio Resource Management Approaches}
+\label{chap:lr:sec:rrm_approaches}
+As RRM is a broad topic which doesn't imply a single methodology, approach, or optimization goal, classification of RRM algorithms is a challenging task. Most of papers with the "Radio Resource Management" keyword are focused on problems of cellular networks, such as LTE or 5G. While the problem formalization, some optimization objective and algorithms can be used for research in 802.11 networks, band usage, deployment and operation specifics make most of the proposals inapplicable for 802.11 networks.
+To the best of our knowledge, no comprehensive survey on RRM in 802.11 WLAN exist. However, we will refer to \cite{bouhafsPerFlowRadioResource2020}, which provides detailed overview of previous research. In \cite{bouhafsPerFlowRadioResource2020}, authors classify RRM algorithms into three categories:
+\begin{itemize}
+    \item \textit{per-cell} approaches seek to optimize the RF situation within the AP's cell coverage. This means that adjustments of radio parameters applied on a cell scale and will be in effect for all stations within the cell. Such classification can be further divided into:
+    \begin{itemize}
+        \item \textit{localized (uncoordinated) per-cell}, where each AP performs RRM decisions independently;
+        \item \textit{centralized per-cell}, where a central entity, such as WLAN Controller, performs RRM decisions for all APs within a WLAN. Some authors refer to this approach as \textit{super-cell} approach \cite{levantiCAPWAPCompliantSolutionRadio2007};
+        \item \textit{coordinated per-cell}, employing cooperation between APs for making coordinated RRM decisions.
+    \end{itemize}
+    \item \textit{per-link} approaches, which optimize the transmission power for a given station;
+    \item \textit{per-flow} approaches, which employ frequency and AP Tx power adjusting to optimize the QoS to the granularity of a given traffic flow within a station, for example, to the flow of a VoIP application.
+\end{itemize}
 
-This description implies several essential properties of the task at hand:
-\begin{enumerate}
-    \item Watermark must contain all necessary information, but still, be placeable and recognizable even on smaller images. The produced watermark must be compact but have the possibility to store enough information. 
-    \item To prevent easy tampering, the watermark must be invisible to the naked eye (and, preferably, to basic image parsing tools). If malefactor does not know about the existence of watermark, they might not even try to remove it and disable it. 
-\end{enumerate}
+In fact, a simple localized per-cell RRM is already widely implemented: almost every home Wi-Fi router is able to select channel automatically, and the method of least-congested channel scan is known and applied \cite{achantaMethodApparatusLeast2006}. However, limitations of such approach are clear: uncoordinated localized decision-making is prone to yield suboptimal results. We can imagine a bit exaggerated extreme case, where a number of APs can sense that channel $C_i$ is not congested and make a decision to switch to that channel. As a result, $C_i$ becomes congested, so APs will seek to switch to another channel $C_j$, where the problem will reoccur. This displays that RRM algorithms need a certain degree of coordination between APs using an algorithm aiming to improve overall WLAN capacity and thus achieve a global optimum.
+Simple per-cell TPC methods with $P_{Tx}$ adjustment with respect to keeping a tolerable SINR (Signal-to-Noise-plus-Interference Ratio) has shown \cite{michalskiSimplePerformanceboostingAlgorithm2016,kazminIspolzovanieNeyronnyhSetey2021} the potential to improve overall bandwidth, although methodological issues such model oversimplification, unrealistic experiment conditions, statistically insignificant results imply the need for the further investigation. Another aspect overlooked is the impact of 802.11 roaming on TPC, since \cite{michalskiSimplePerformanceboostingAlgorithm2016,kazminIspolzovanieNeyronnyhSetey2021} only consider the case of independent access points providing distinct extended service sets, which is not the case for enterprise WLANs.
+As shown in \cite{ramachandranSymphonySynchronousTwophase2008}, per-link TPC considerably improves WLAN performance, achieves more spatial reuse, increases throughput, and able to avoid channel access asymmetry and receiver-side interference (also known as hidden-node problem). However, such approach has certain hardware requirements, namely, \textit{per-packet transmit power control}, a feature available only for a small number of 802.11 chipsets from Atheros, which limits the applicability of this approach.
+It is challenging to implement per-flow RRM for vanilla 802.11, since it requires an extension framework over the 802.11 standard that allows (1) distinguishing particular traffic flows between STA and AP (2) QoS requirements detection \cite{bouhafsPerFlowRadioResource2020}. Thus, such approach remains of little interest for the purpose of this thesis.
+
+
+\subsection{Mathematical Models for Radio Resource Management}
+\label{chap:lr:sec:math_models}
+
+Most of works on RRM consider \cite{bouhafsPerFlowRadioResource2020,levantiCAPWAPCompliantSolutionRadio2007} network planning as optimization problem, with the goal of minimizing or maximizing some metrics. To reduce search space while brute-forcing optimal channel parameters for each AP within a WLAN, \cite{levantiCAPWAPCompliantSolutionRadio2007} propose heuristics to reuse channels for non-overlapping cells. Other approaches aim to keep some pre-defined target metric, such as SINR, within pre-defined acceptable boundaries \cite{michalskiSimplePerformanceboostingAlgorithm2016}.
+
+\section {Proprietary RRM Solutions}
+\label{chap:lr:sec:prop_rrm}
+This section is dedicated to surveying proprietary RRM solutions from major vendors. We will consider Cisco, Juniper Networks, and Ruckus Networks, since they are the most popular vendors in enterprise WLAN market \cite{WiFiMarketSize}.
+
+\subsection{Cisco}
+Cisco offers several RRM solutions.
+First, Cisco CleanAir is a flagship technology from Cisco \cite{CiscoCleanAirTechnology2014} to optimize network performance, avoid jamming, and detect interference sources, including non-802.11 ones. Cisco states that it outperforms competitors by:
+\begin{itemize}
+    \item using dedicated hardware for RF analytics: Cisco Catalyst 9100 Series Access Points are equipped with \textit{scanning radio} that performs background RF scanning without occupying main APs radio transcievers, which allows to avoid interruptions in providing services to clients, and Cisco RF ASIC, a chip capable of performing wireless network analytics;
+    \item classifying and visualizing interferers;
+    \item managing radio resources on a WLAN-wide scale, providing real-time and historical information with different granularity;
+    \item CleanAir is event-driven, that means it can adapt to changing RF environment and adjust radio parameters in a matter of few minutes, drastically reducing downtime.
+\end{itemize}
+However, CleanAir is only available for the most expensive models in the Cisco product line, which makes it inapplicable for large-scale deployments. Also, lack of compatible radio analytics hardware from other vendors and implementation details render this technology fundamentally unusable for non-Cisco equipment.
+On the other hand, Cisco Catalyst product line of WLAN Controllers provide "regular" RRM functionality that only requires regular Wi-Fi chipset and can be used with all Cisco APs \cite{ciscoRadioResourceManagement}.
+
+\subsection{Juniper Networks}
+Juniper Networks offers Mist AI RRM technology to improve network performance. The notable features are \cite{junipernetworksUnderstandingRadioResource2023,RadioManagementTechnology}:
+\begin{itemize}
+    \item \textit{automatic dual-band radio management} — if RRM system finds 2.4-GHz radio transmitter to be unused on a given AP, it disables the radio to free airspace for other access points;
+    \item Juniper Mist APs are equipped with so-called Predictive Analytics and Correlation Engine (PACE) "to monitor conditions and make out-of-band adjustments" \cite{RadioManagementTechnology};
+    \item Telemetry is sent to the Juniper Mist Cloud, so that the cloud can make regular adjustments to APs based on historical data and usage statistics;
+    \item According to \cite{junipernetworksUnderstandingRadioResource2023}, a Reinforcement Learning (RL) approach is taken for channel and power planning of APs within a WLAN.
+\end{itemize}
+To the best of our knowledge, there are no peer-reviewed evaluations of Juniper Networks RRM efficiency, so we can only rely on vendor's claims.
+
+\subsection{Ruckus Networks}
+Ruckus Networks offers \cite{RuckusChannelFlyFeature2023} ChannelFly RRM technology that provides automatic channel selection, so power planning is not featured. As Ruckus describes, "ChannelFly constantly learns about each channel's capacity using actual activity on across all channels within the 2.4 and 5GHz bands. With this information, ChannelFly builds a statistical model over time to determine what channel will yield the greatest capacity for clients". Ruckus states that ChannelFly has no "dead time", as Ruckus calls the time period when an AP performs background scanning on different channels and is unable to communicate with its clients, which implies that Ruckus APs are also equipment with dedicated scanning radio.
+Another feature from Ruckus is "smart adaptive antenna array", which makes signal from Ruckus APs more directed to improve SNR.
+
+\section {Conclusion}
+\label{chap:lr:sec:conclusion}
+Summarizing from the previous sections, we can conclude that the problem of radio resource management in 802.11 WLANs is still relevant, since the IEEE 802.11 standard provides only limited tools for RRM, while existing commercial solutions are proprietary and lack interoperability. Thus, there is a need for a novel RRM algorithm that can be implemented in existing enterprise WLAN infrastructure and improve overall network performance.
+After analyzing previous research, we consider super-cell approach as the most applicable to our work, since the presence of WLC as a centralized entity with orders of magnitude higher computation power and ability to collect and store statistics from all APs all over the WLAN in the long term can release the burden of RRM from Access Points and potentially improve the overall network efficiency.
