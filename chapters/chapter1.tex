@@ -2,14 +2,31 @@
 \label{chap:intro}
 \chaptermark{Optional running chapter heading}
 
+% Background -- broad and specific information and previous research in the area. Problem, importance, what is known/what has been done.
 Nowadays, wireless local area networks (WLAN) implementing IEEE 802.11 standards, which are commonly known under "Wi-Fi" brand, become an increasingly popular solution for last-mile internet access with a diverse population of users, starting from home Wi-Fi routers up to large campus- and city-scale WLANs with coverage areas reaching several square kilometers.
 As a result, the density of Wi-Fi network increases, so the frequency band allocated for 802.11 networks becomes more congested, which leads to interference and signal cancellation between different WLANs, resulting in network performance degradation.
 Moreover, other appliances operating on frequencies that overlap with Wi-Fi band, undermining the performance of WLANs.
-This situation has led to a growing demand for Radio Resource Management (RRM) solutions, especially for large enterprise-grade multi-AP WLAN deployments. However, existing solutions offered by major vendors are proprietary, so their source code, used algorithms and details of operation are not disclosed.
-In this Thesis, we present an implementation of a Radio Resource Management algorithm that is intended to be more effective then available predecessors while putting practical applicability in the first place.
+This situation has led to a growing demand for Radio Resource Management (RRM) solutions, especially for large enterprise-grade multi-AP WLAN deployments.
+% Unknown -- problems with previous work and unknown factors in the area.
+However, existing solutions offered by major vendors are proprietary, so their source code, used algorithms and details of operation are not disclosed.
+In the same time, academic papers on RRM are mostly focused on cellular networks, which are different, so their solutions are not directly applicable to WLANs. Existing works on RRM in 802.11 networks have problems in applicability, since real-world hardware poses constraints on what metrics can be retrieved from the WLAN and which physical and link-level parameters can be adjusted.
+% Questions / Problem / Purpose of study -- contribution made by this research.
+This thesis aims to fill this gap by proposing a new RRM algorithm that, unlike existing market solutions, is publicly available, and at least as effective, while being practical and applicable to real-world WLAN deployments.
+% Experimental / Design Approach -- aproach taken towards this contribution.
+By analyzing theoretical works on 802.11 RRM, we come up with suitable optimization approach that combines both Adaptive Channel Selection (ACS) and Transmit Power Control (TPC) techniques to improve RF spectrum situation EM compatibility and channel reuse, which in turn leads to improved capacity of a wireless network.
+Our approach benefits from the employment of Wireless LAN Controller (WLC) — a central entity in the WLAN architecture that is able to control and collect telemetry from all access points within a WLAN.
 
-Our approach benefits from the employment of Wireless LAN Controller (WLC) — a central entity in the WLAN architecture that is able to control and gather statistics from all the access points.
+% Results and Conclusions -- main results and findings related to the study purpose.
+Integrated into the Wimark WLC RRM module, our approach achieves up to 67\% faster convergence. The enhanced spectrum management provided by our algorithm delivers 31\% increase in Signal-to-Interference-Plus-Noise Ratio (SINR) on Access Points (APs) and up to 29\% bandwidth improvement compared to legacy algorithms, demonstrating its readiness for production usage and integration into existing enterprise infrastructure.
+
+% Significance / Implications -- importance of the findings.
+
+
+% Outline of paper structure
+
 The rest of this Thesis is structured as follows: Chapter \ref{chap:lr} reviews existing academic research on managing radio resources and publicly available information about proprietary RRM solutions; in Chapter 3, we formulate the mathematical model of transmission in a wireless network, review the existing RRM algorithm at Wimark Systems, identify its weaknesses and derive a new algorithm; in Chapter 4, we describe implementation details for the algorithm in NS-3 simulator and Wimark products; in Chapter 5, we evaluate the performance of our algorithm; Chapter 6 contains the results and discussion.
+
+
 
 Below in this chapter, we briefly review the fundamentals of Radio Frequency (RF) communications, and IEEE 802.11 standard for wireless LAN.
 
@@ -35,9 +52,9 @@ Throughout this Thesis, we will refer to field-specific terms, whose definitions
         \hline
         SNR (Signal-to-Noise Ratio) & Signal quality metric, defined as ratio of signal power to the noise \\
         \hline
-        SINR (Signal-to-Interference-plus-Noise Ratio) & b4 \\
+        SINR (Signal-to-Interference-plus-Noise Ratio) & Signal quality metric, defined as ratio of signal power to the sum of noise power and power of interefering signals \\
         \hline
-        RSSI (Received Signal Strength Indicator) & quality metric of a wireless signal \\
+        RSSI (Received Signal Strength Indicator) & A metric of a wireless signal quality defined in 802.11, varying from 0 to 255, where exact mappings to Rx signal power are vendor-specific. \\
         \hline
         Radio cell & A geographical area covered by a radio transmitter \cite{tanenbaumComputerNetworks2020} \\
         \hline
