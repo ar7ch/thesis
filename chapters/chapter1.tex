@@ -2,6 +2,29 @@
 \label{chap:intro}
 \chaptermark{Optional running chapter heading}
 
+% Write 2-3 connected sentences representative of each of the following four functions in Introduction chapter:
+\section{Part 1. Introduction}
+% indicate the importance of your topic
+\subsection{Importance of the topic}
+Nowadays, wireless local area networks (WLAN) implementing IEEE 802.11 standards,commonly known under "Wi-Fi" brand, become an increasingly popular solution for last-mile internet access with a diverse population of users, starting from home Wi-Fi routers up to large campus- and city-scale WLANs with coverage areas reaching several square kilometers.
+As a result, the density of Wi-Fi network increases, so the frequency band allocated for 802.11 networks becomes more congested, which leads to interference and signal cancellation between different WLANs, resulting in network performance degradation.
+Moreover, other appliances operating on frequencies that overlap with Wi-Fi band, undermining the performance of WLANs.
+To meet current bandwidth and latency expectations of modern network applications, such as video streaming, cloud computing, and video conferencing, the wireless network must be able to provide sufficient capacity to all clients. In this light, proper radio resource management becomes crucial for operating wireless networks.
+% indicate what is already known about your topic
+\subsection{What is already known about the topic}
+The problem of managing radio resources is studied extensively in the context of cellular networks, which are characterized by extensive frequencies reuse, large number of clients and large coverage areas spanning multiple kilometers, so the proper spectrum management is vital for operation of cells. This problem breaks down to the following: given a set of access points $\boldsymbol{B}$, which can communicate over a set of channels $\boldsymbol{C}$, with a maximum transmit power of $P_{max}$, establish a radio link between a client device and an access point by assigning it a triplet $(b, c, p)$, where $b \in \boldsymbol{B}$, $c \in \boldsymbol{C}$, $p \leq P_{max}$.
+Essentially, RRM algorithms aim to provide such assignments that maximize the overall network performance.
+% indicate a lack or a gap in existing literature, possible limitations of the existing approaches
+\subsection{Limitations of existing approaches}
+A growing demand for Radio Resource Management (RRM) solutions, especially for large enterprise-grade multi-AP WLAN deployments, has led to the development of multiple commercial solutions, such as Cisco Radio Resource Management (RRM) \cite{ciscoCiscoRadioResource}, Aruba Adaptive Radio Management (ARM) \cite{arubaAdaptiveRadioManagement}, and others. However, existing solutions offered by major vendors are proprietary, so their source code, used algorithms and details of operation are not disclosed.
+In the same time, most studies on RRM have only focused on cellular networks, while RRM in 802.11 networks received much le. Existing works on RRM in 802.11 networks have problems in applicability, since real-world hardware poses constraints on what metrics can be retrieved from the WLAN and which physical and link-level parameters can be adjusted.
+% indicate the contribution of your thesis project, establish its significance
+\subsection{Contribution and signiicance of the thesis}
+This thesis aims to fill this gap by proposing a new RRM algorithm that, unlike existing market solutions, is publicly available, and at least as effective, while being practical and applicable to real-world WLAN deployments.
+By analyzing theoretical works on 802.11 RRM, we come up with suitable optimization approach that combines both Adaptive Channel Selection (ACS) and Transmit Power Control (TPC) techniques to improve RF spectrum situation EM compatibility and channel reuse, which in turn leads to improved capacity of a wireless network.
+Our approach benefits from the employment of Wireless LAN Controller (WLC) — a central entity in the WLAN architecture that is able to control and collect telemetry from all access points within a WLAN.
+
+
 % Background -- broad and specific information and previous research in the area. Problem, importance, what is known/what has been done.
 Nowadays, wireless local area networks (WLAN) implementing IEEE 802.11 standards, which are commonly known under "Wi-Fi" brand, become an increasingly popular solution for last-mile internet access with a diverse population of users, starting from home Wi-Fi routers up to large campus- and city-scale WLANs with coverage areas reaching several square kilometers.
 As a result, the density of Wi-Fi network increases, so the frequency band allocated for 802.11 networks becomes more congested, which leads to interference and signal cancellation between different WLANs, resulting in network performance degradation.

@@ -24,9 +24,9 @@
 
 \lstdefinelanguage{Lua}
 {
-morekeywords={and,break,do,else,elseif,end,false,for,function,if,in,local,nil,not,or,repeat,return,then,true,until,while,_G,_ENV,table,every},
+morekeywords={and,break,do,else,elseif,end,false,for,function,if,in,local,nil,not,or,repeat,return,then,true,until,while,_G,_ENV,table,every,Repeat,If,For},
 sensitive=false,
-morecomment=[l]{--},
+morecomment=[l]{//},
 morecomment=[s]{--[[}{]]},
 morestring=[b]",
 morestring=[b]'
@@ -48,72 +48,92 @@ The purpose of this chapter is to lay a foundation for the further work in this 
 
 \section{Baseline solution analysis}
 \label{sec:baseline}
-The legacy RRM algorithm from Wimark Systems that we will refer to as \textit{Legacy} is based on background scanning by access points. The goal of this thesis is to create a new RRM algorithm that is overall better in managing radio resources and at least not worse than \textit{Legacy} in corner cases.
+The greedy RRM algorithm from Wimark Systems that we will refer to as \textit{RRMGreedy} is based on background scanning by access points. The goal of this thesis is to create a new RRM algorithm that is overall better in managing radio resources and at least not worse than \textit{RRMGreedy} in corner cases.
 
-Here, we describe \textit{Legacy}.
-First
+Here, we describe \textit{RRMGreedy}.
+As said by the description
 
-\begin{lstlisting}[language={[5.0]Lua}, caption=Legacy RRM algorithm, label=lst:legacy]
+\begin{lstlisting}[language={Lua}, caption=greedy RRM algorithm, label=lst:greedy]
+    Algorithm RRMAlgoGreedy
 
-    function backgroundScan():
-        for each band:
-            for each channel:
-                sniff frames (only beacon?) on channel
-                collect SSIDs and corresponding RSSI
-        return table {SSID, Band, Channel, RSSI}
+    Input:
+        data: RRMInitData
 
-    function collectRRMStats():
-        for each AP with background scanning enabled:
-            backscan := background_scan()
-            send backscan results to WLC DB
+    Output:
+        GroupDataWithEvent: final configuration and event data for CPEs
 
-    function ap_adjust(ap, powerAssignment, channelAssignment):
-        ap.setChannel(channelAssignment)
-        ap.setPower(powerAssignment)
+    Begin
+        scandata := ProcessScanDataForGroup(data.CPEs, data.ScanData)
+        Log "Initial scan data processed"
 
-    every 10 minutes on WLC:
-        rrmStats = collectRRMStats()
-        upload rrmStats to WLC DB
+        // Step 1: Set Maximum Transmission Power
+        For each cpe in data.CPEs
+            For each iface in cpe.State.Wifi
+                MaxIfaceTxPower := Max Tx power for given hardware
+                scandata[iface].TxDiff := MaxIfaceTxPower - iface.TxPower
 
+        // Step 2: Optimize Channel Selection
+        // calculate initial group interference
+        groupInterference := GroupInterference(scandata)
+        Repeat until no improvement in groupInterference
+            For each cpe in data.CPEs
+                For each iface in cpe.State.Wifi
+                    bestChannel := choose channel that minimizes InterferenceOnCPE(scandata, channel, width)
+                    scandata[iface].channel := bestChannel
+            Recalculate groupInterference := GroupInterference(scandata)
 
-    every RRM_PERIOD minutes or on demand:
-        rrmStats = load rrmStats from WLC DB
-        for each rfGroup in RFGroups:
-            channelAssignments, powerAssignments = RRMAlgorithm(rfGroup)
-            for each ap in rfGroup:
-                ap_adjust(ap, channelAssignments[ap], powerAssignments[ap])
+        // Step 3: Adjust Transmission Power (if enabled)
+        If algo.ManagePower
+            Repeat until no improvement in groupInterference
+                Identify worst-performing interface using InterferenceFromCPE
+                Calculate needpower and bestpower for worst interface
+                Update scandata with new Tx power settings
+                Evaluate total interference using GroupInterference
 
+        // Step 4: Final Data Assembly and Event Generation
+        finaldata, eventsData := Assemble final configuration and events
+        If no significant improvement in interference
+            Log "No significant changes made"
+            Return error message
 
-    function RRMAlgorithm(rfGroup):
-        ScanData = {SSID, BSSID, RSSI, Channel, }
-        RRMData = {APSettings, APModelInfo, ScanData}
-        powerAssignments = decideTPC(RRMData)
-        channelAssignments = decideACS(RRMData)
-        return channelAssignments, powerAssignments
+        Return finaldata and eventsData
 
-    function decideTPC(RRMData):
-        powerAssignments = {}
-        for each ap in RRMData:
-            powerAssignments[ap] = maxPossiblePower(ap)
-        return powerAssignments
-
-    function decideACS(RRMData):
-        currentGroupCumInterference = cumInteference(RRMData)
-
-    function cumInteference(RRMData):
-        groupInterference = 0
-        for each ap in RRMData:
-            for each interface on ap:
-                groupInterference += interference(interface.channel, interface.width)
-        return groupInterference
-
-    function interference(ifaceChannel, ifaceWidth):
-        for each otherChannel in otherChannels:
-            ci = channelInterference(ifaceChannel, ifaceWidth, otherChannel)
-            if ci == 0:
-                continue
-            
-
-
+    End Algorithm
 \end{lstlisting}
+
+\begin{lstlisting}[language={Lua}, caption=InterferenceOnCPE() function, label=lst:interf_on_cpe]
+Function InterferenceOnCPE(scandata, interface, interfaceChannel, interfaceChannelWidth)
+    sum := 0.0 // cumulative interference score for this interface
+    ifData := scandata[interface]
+
+    // Calculate interference from outer channels
+    For each otherChannel in ifData.Outer
+        inteferenceScore := ChannelInterference(otherChannel, interfaceChannel, interfaceChannelWidth)
+        If channels are orthogonal continue
+        // calculate cumulative interference score for all signals on this channel
+        chsum := 0.0
+        For every signal sensed on otherChannel
+            sigRating := signal power (in dBm) normalized to [0, 1] scale
+            chsum += interferenceScore * sigRating
+        sum += chsum
+
+    // Calculate interference from inner channels
+    For each othKey, siglist in ifData.Inner
+        oth, ok := data[othKey]
+        If not ok
+            Continue
+        ci := ChannelInterference(oth.Settings.Central, ch, width)
+        If ci == 0
+            Continue
+        chsum := 0.0
+        For each sig in siglist
+            adjustedSignal := sig.Signal + thisdata.TxDiff
+            sigRating := CalculateSignalRating(adjustedSignal)
+            chsum += ci * sigRating
+        sum += chsum
+
+    Return sum
+\end{lstlisting}
+
+
 
