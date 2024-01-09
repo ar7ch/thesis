@@ -40,6 +40,8 @@
 \usepackage{pdfpages}
 \newenvironment{bottompar}{\par\vspace*{\fill}}{\clearpage}
 \usepackage{amsmath,amsfonts}
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{arg\,max}
 \usepackage{url}
 
 \let\openbox\relax
@@ -54,6 +56,8 @@
 \newtheorem*{remark}{Remark}
 \theoremstyle{remark}
 \newtheorem*{example}{Example}
+
+\newcommand{\card}[1]{\lvert{#1}\rvert}
 
 
 \usepackage{titlesec}

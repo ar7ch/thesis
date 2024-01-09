@@ -4,27 +4,27 @@
 \definecolor{backcolour}{rgb}{0.95,0.95,0.92}
 
 \lstdefinestyle{mystyle}{
-    backgroundcolor=\color{backcolour},   
+    backgroundcolor=\color{backcolour},
     commentstyle=\color{codegreen},
     keywordstyle=\color{magenta},
     numberstyle=\tiny\color{codegray},
     stringstyle=\color{codepurple},
     basicstyle=\ttfamily\footnotesize,
-    breakatwhitespace=false,         
-    breaklines=true,                 
-    captionpos=b,                    
-    keepspaces=true,                 
-    numbers=left,                    
-    numbersep=5pt,                  
-    showspaces=false,                
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
     showstringspaces=false,
-    showtabs=false,                  
+    showtabs=false,
     tabsize=2
 }
 
-\lstdefinelanguage{Lua}
+\lstdefinelanguage{Pseudo}
 {
-morekeywords={and,break,do,else,elseif,end,false,for,function,if,in,local,nil,not,or,repeat,return,then,true,until,while,_G,_ENV,table,every,Repeat,If,For},
+morekeywords={and,break,do,else,elseif,end,false,for,function,if,in,local,nil,not,or,repeat,return,then,true,until,while,_G,_ENV,table,every,Repeat,If,For,Continue,Function,End,Return,Then,Else,While,Do,Until,And,Or,Local,Nil,False,True,Not,In},
 sensitive=false,
 morecomment=[l]{//},
 morecomment=[s]{--[[}{]]},
@@ -33,7 +33,6 @@ morestring=[b]'
 }
 
 \lstset{style=mystyle}
-
 
 \chapter{Problem statement and baseline solution analysis}
 \label{chap:met}
@@ -46,79 +45,169 @@ The purpose of this chapter is to lay a foundation for the further work in this 
 \label{sec:prob}
 
 
-\section{Baseline solution analysis}
+\section{Baseline solution analysis --- RRMGreedy}
 \label{sec:baseline}
 The greedy RRM algorithm from Wimark Systems that we will refer to as \textit{RRMGreedy} is based on background scanning by access points. The goal of this thesis is to create a new RRM algorithm that is overall better in managing radio resources and at least not worse than \textit{RRMGreedy} in corner cases.
 
-Here, we describe \textit{RRMGreedy}.
-As said by the description
+\subsection{RRMGreedy description}
+Here, we describe algorithm \textit{RRMGreedy}.
+As the name suggests, it tries to achieve optimal radio resource allocation in a greedy way, taking the local optimum for each device in a RRM group.
+The algorithm operates on the granularity of interfaces rather than access points.
 
-\begin{lstlisting}[language={Lua}, caption=greedy RRM algorithm, label=lst:greedy]
-    Algorithm RRMAlgoGreedy
+In other words, we consider \textbf{RRM group} $G$ as a set of \textbf{wireless interfaces} $w$ (that we will further refer to as simply \textbf{interfaces}), where several interfaces can belong to a single access point.
+On a high level, the algorithm consists of two main steps --- \textbf{Channel Selection} and \textbf{Transmit Power Adjustment}:
+\everymath{\displaystyle} % index underneath argmax
+\begin{enumerate}
+\item \textbf{Channel Selection}:
+    \begin{enumerate}
+        \item \label{gi} compute \textbf{group interference} $I$ --- sum of interference scores for each interface in group:
+            \begin{equation}
+                I = \sum_{i=0}^{\lvert G \rvert} OnIfaceInterference(w_i)
+            \end{equation}
+        We denote initial group interference score as $I_{0}$.
+        \item for each $w_i$, compute its updated interference score for every channel possible for that interface $c^k_i$:
+            \begin{equation}
+                interf_i = OnIfaceInterference(w_i, c^k_i)
+            \end{equation}
+        If there is a channel $c^k_i$ which reduced $interf_i$, update interface settings to issue change to that channel later.
+        \item \textbf{continue while there is an improvement}, i.e., previous group interference score is larger than the latest one:
+        $I_{j-1} > I_{j}$ for $j > 1$
+    \end{enumerate}
+\item \textbf{Transmit Power Adjustment}:
+    \begin{enumerate}
+        \item Compute group interference as in step \ref{gi}
+        \item Identify the \textit{worst interface} interface $w_m$ experiencing \textit{worst interference} (i.e. whose interference score is the largest):
+            \begin{equation}
+                w_m = \argmax_i FromIfaceInterference(w_i)
+            \end{equation}
+        \item Gradually reduce transmit power of $w_m$ with exponential backoff until it stops being the worst interface or reaches minimum Tx power.
+    \end{enumerate}
+\end{enumerate}
 
-    Input:
-        data: RRMInitData
+Listing \ref{lst:greedy} shows pseudocode for \textit{RRMGreedy}:
+\begin{lstlisting}[language={Pseudo}, caption=greedy RRM algorithm, label=lst:greedy]
+Algorithm RRMAlgoGreedy
+Input:
+    data: RRMInitData
+Output:
+    GroupDataWithEvent: final configuration and event data for CPEs
+Begin
+    // Step 0: Prepare raw scanning data received from APs
+    scandata := ProcessScanDataForGroup(data.CPEs, data.ScanData)
 
-    Output:
-        GroupDataWithEvent: final configuration and event data for CPEs
+    // Step 1: Set Maximum Transmission Power
+    For each cpe in data.CPEs
+        For each iface in cpe.State.Wifi
+            MaxIfaceTxPower := Max Tx power for given hardware
+            scandata[iface].TxDiff := MaxIfaceTxPower - iface.TxPower
 
-    Begin
-        scandata := ProcessScanDataForGroup(data.CPEs, data.ScanData)
-        Log "Initial scan data processed"
-
-        // Step 1: Set Maximum Transmission Power
+    // Step 2: Optimize Channel Selection
+    // calculate initial group interference
+    groupInterference := GroupInterference(scandata)
+    Repeat until no improvement in groupInterference
         For each cpe in data.CPEs
             For each iface in cpe.State.Wifi
-                MaxIfaceTxPower := Max Tx power for given hardware
-                scandata[iface].TxDiff := MaxIfaceTxPower - iface.TxPower
+                bestChannel := choose channel that yields minimal InterferenceOnCPE(scandata, channel, width) for this iface
+                scandata[iface].channel := bestChannel
+        Recalculate groupInterference := GroupInterference(scandata)
 
-        // Step 2: Optimize Channel Selection
-        // calculate initial group interference
-        groupInterference := GroupInterference(scandata)
+    // Step 3: Adjust Transmission Power (if enabled)
+    If TPC enabled
         Repeat until no improvement in groupInterference
-            For each cpe in data.CPEs
-                For each iface in cpe.State.Wifi
-                    bestChannel := choose channel that minimizes InterferenceOnCPE(scandata, channel, width)
-                    scandata[iface].channel := bestChannel
-            Recalculate groupInterference := GroupInterference(scandata)
+            Identify worst-performing interface using InterferenceFromCPE
+            Calculate needpower and bestpower for worst interface
+            Update scandata with new Tx power settings
+            Evaluate total interference using GroupInterference
 
-        // Step 3: Adjust Transmission Power (if enabled)
-        If algo.ManagePower
-            Repeat until no improvement in groupInterference
-                Identify worst-performing interface using InterferenceFromCPE
-                Calculate needpower and bestpower for worst interface
-                Update scandata with new Tx power settings
-                Evaluate total interference using GroupInterference
+    // Step 4: Final Data Assembly and Event Generation
+    finaldata, eventsData := Assemble final configuration and events
+    If no significant improvement in interference
+        Return error "No significant changes made"
 
-        // Step 4: Final Data Assembly and Event Generation
-        finaldata, eventsData := Assemble final configuration and events
-        If no significant improvement in interference
-            Log "No significant changes made"
-            Return error message
-
-        Return finaldata and eventsData
-
-    End Algorithm
+    Return finaldata and eventsData
+End Algorithm
 \end{lstlisting}
 
-\begin{lstlisting}[language={Lua}, caption=InterferenceOnCPE() function, label=lst:interf_on_cpe]
+Listing \ref{lst:process_scan_data_for_group} shows pseudocode for \textit{ProcessScanDataForGroup()} that splits measurement data from each interface.
+
+\begin{lstlisting}[language={Pseudo},caption=ProcessScanDataForGroup pseuodocode, label=lst:process_scan_data_for_group]
+For each scan from interface in RRM group
+    For bssid, signaldata in scan
+        channel := signaldata.channel
+        If bssid in RRMGroup
+            interface.Inner[channel].append(signaldata)
+        Else
+            interface.Outer[channel].append(signaldata)
+\end{lstlisting}
+
+
+Listing \ref{lst:interf_on_cpe} shows pseudocode for \textit{OnIfaceInterference()} function that calculates interference experienced by given wireless interface from outer and inner sources.
+Essentially, it breaks down to calculating
+\begin{equation}
+    interf_i = OnIfaceInterference(w_i, channel, width) = interf^{outer}_i + interf^{inner}_i
+\end{equation}
+\begin{equation}
+    interf^{outer}_i = \sum_{j=0}^{\lvert S^{outer}_i \rvert} ChannelInterference(w_i, s^{j}_i) \cdot scale(s^j_i)
+\end{equation}
+\begin{equation}
+    interf^{inner}_i = \sum_{j=0}^{\lvert S^{inner}_i \rvert} ChannelInterference(w_i, s^{j}_i) \cdot scale(s^j_i + w_i.TxDiff)
+\end{equation}
+where:
+\begin{itemize}
+    \item $S^{outer}_i$ is a set of signals sensed by $w_i$ on from stations not in $G$
+    \item $S^{inner}_i$ is a set of signals sensed by $w_i$ from stations in $G$, $s^j_i$ is $j$-th signal in $S^{outer}_i$ or $S^{inner}_i$
+    \item $scale(x)$ is a min-max normalization function that normalizes $x$ to [0, 1] scale with given $maxSignal$ and $minSignal$:
+        \begin{equation} scale(x) = \frac{x - minSignal}{maxSignal - minSignal} \end{equation}
+    \item $w_i.TxDiff$ is a transmit power adjustment for $w_i$
+\end{itemize}
+as follows:
+
+\begin{enumerate}
+    \item \textbf{Calculate outer interference}: recall that \textbf{outer interference} is interference originating from access points not in the RRM group $G$.
+    Based on earlier measurements sent by $w_i$, for each sensed signal $s \in S_i = S^{inner}_i \cap S^{outer}_i$ we calculate adjacent-channel/co-channel interference score with \textit{ChannelInterference()} (Listing \ref{lst:channel_interf}). Then, for each signal on given channel, we calculate interference score as a product of \textit{ChannelInterference()} and signal power normalized to [0, 1] scale. Finally, we sum up interference scores for all signals on this channel.
+    \begin{equation}
+        interf^{outer}_i = \sum_{j=0}^{\lvert S^{outer}_i \rvert} ChannelInterference(w_i, s^j_i) \cdot \frac{signal^j_i - minSignal}{maxSignal - minSignal}
+    \end{equation}
+    where $S^{outer}_i$ is a set of signals sensed by $w_i$ on channels not in $\mathbf{G}$, $s^j_i$ is $j$-th signal in $S^{outer}_i$, $signal^j_i$ is power of $s^j_i$ normalized to [0, 1] scale, and $maxSignal$ is the maximum signal power in $S^{outer}_i$.
+    \item \textbf{Calculate inner interference}: recall that \textbf{inner interference} is interference originating from access points in the RRM group $G$. In the same way as for outer interference, we calculate interference score for each signal on given channel as a product of \textit{ChannelInterference()} and signal power normalized to [0, 1] scale. One difference is that TxDiff is taken into account for Tx power adjustment. Finally, we sum up interference scores for all signals on this channel.
+    \begin{equation}
+        interf^{inner}_i = \sum_{j=0}^{\lvert S^{inner}_i \rvert} ChannelInterference(w_i, s^j_i) \cdot \frac{signal^j_i + w_i.TxDiff}{maxSignal}
+    \end{equation}
+    where $S^{inner}_i$ is a set of signals sensed by $w_i$ on channels in $G$, $s^j_i$ is $j$-th signal in $S^{inner}_i$, $signal^j_i$ is power of $s^j_i$ normalized to [0, 1] scale, and $maxSignal$ is the maximum signal power in $S^{inner}_i$.
+\end{enumerate}
+
+\begin{lstlisting}[language={Pseudo}, caption=ChannelInterference() function, label=lst:channel_interf]
+Function ChannelInterference(ch1, ch2, width)
+    add := 0
+    If ch1 < 36 // channels less than 36 belong to 2.4 GHz band
+        add := 1
+    If abs(ch1 - ch2) >= width / 5 + add
+        Return 0  // No significant interference
+    Else
+        Return 1  // Significant interference
+\end{lstlisting}
+In \textit{ChannelInterference()}, the threshold for determining interference $width/5+add$ is a heuristic. It divides the channel width by 5, which suggests a rule of thumb about how close channels can be before they start to interfere significantly. The addition of add for lower 2.4 GHz channels suggests a more conservative threshold for these channels.
+
+\begin{lstlisting}[language={Pseudo}, caption=OnIfaceInterference() function, label=lst:interf_on_cpe]
 Function InterferenceOnCPE(scandata, interface, interfaceChannel, interfaceChannelWidth)
-    sum := 0.0 // cumulative interference score for this interface
     ifData := scandata[interface]
 
-    // Calculate interference from outer channels
-    For each otherChannel in ifData.Outer
+    // Calculate interference from outer APs
+    outerInterf := 0
+    For each otherChannel, signalData in ifData.Outer
         inteferenceScore := ChannelInterference(otherChannel, interfaceChannel, interfaceChannelWidth)
-        If channels are orthogonal continue
+        If ci == 0 // channels are orthogonal
+            Continue
         // calculate cumulative interference score for all signals on this channel
         chsum := 0.0
-        For every signal sensed on otherChannel
+        For each signal in signalData // every signal sensed on otherChannel
             sigRating := signal power (in dBm) normalized to [0, 1] scale
             chsum += interferenceScore * sigRating
-        sum += chsum
+        outerInterf += chsum
 
-    // Calculate interference from inner channels
-    For each othKey, siglist in ifData.Inner
+    // Calculate interference from inner APs
+    innerInterf := 0
+    For each otherChannel, signalData in ifData.Inner
         oth, ok := data[othKey]
         If not ok
             Continue
@@ -126,14 +215,75 @@ Function InterferenceOnCPE(scandata, interface, interfaceChannel, interfaceChann
         If ci == 0
             Continue
         chsum := 0.0
-        For each sig in siglist
-            adjustedSignal := sig.Signal + thisdata.TxDiff
-            sigRating := CalculateSignalRating(adjustedSignal)
+        For each signal in signalData
+            sourceInterface := interface from where signal origins
+            adjustedSignal := signal + sourceInterface.TxDiff
+            sigRating := adjustedSignal power (in dBm) normalized to [0, 1] scale
             chsum += ci * sigRating
-        sum += chsum
+        innerInterf += chsum
 
-    Return sum
+    Return outerInterf + innerInterf
 \end{lstlisting}
 
+After the channel selection is completed, transmit power adjustment is performed. The goal of this step is to reduce transmit power of the interface that experiences the most interference from other interfaces in the group.
+
+Check all interfaces $w_i \in G$.
+If $w_i$ interferes with currently considered interface $w, w \ne w_i$,
+\begin{lstlisting}[language={Pseudo}, caption=FromIfaceInterference() function, label=lst:interf_from_cpe]
+Function FromIfaceInterference(scandata, iface)
+    sum := 0.0
+    maxsignal := MinSignal
+    thisdata := scandata[iface]
+
+    For each otherIface in data
+        if otherIface == iface
+            Continue
+        // Get all measurements of signals from iface that otherIface received
+        thisIface := othCpe.InnerMeasurements[iface]
+        If thisIface == nil // no measurements for this interface from otherIface
+            Continue
+        ci := ChannelInterference(thisdata.Settings.Central, otherIface.Settings.Central, otherIface.Settings.Width)
+        If ci == 0 // channels are orthogonal
+            Continue
+        chsum := 0.0
+        For each sig in thisIface
+            signal := sig.Signal + thisdata.TxDiff
+            sigRating := signal power (in dBm) normalized to [0, 1] scale
+            chsum += ci * sigRating
+            maxsignal = max(signal, maxsignal)
+        sum += chsum
+
+    Return sum, maxsignal
+\end{lstlisting}
+
+\subsection{Evaluating asympotic complexity}
+\label{sec:complexity}
+We will now evaluate asymptotic complexity of \textit{RRMGreedy} algorithm.
+First, let us consider the complexity of auxiliary functions that are used:
+\begin{enumerate}
+    \item $ChannelInterference(ch_1, ch_2, width)$ has constant complexity $O(1)$.
+    \item $OnIfaceInterference(G, w_i)$ has complexity linear w.r.t. the number of signals sensed by $w_i$, i.e.,
+        $O(\card{S_i}) = O(\card{S^{outer}_i} + \card{S^{inner}_i})$
+    \item $FromIfaceInterference(G, w_i)$ has complexity proportional to the product of number of interfaces in $G$ and amount of signal samples from $w_i$ heard by other interfaces, which is limited by some constant $C$, reasonably small in practice ($C < 10$), i.e.,
+        $O(\card{G} \cdot C) = O(\card{G})$
+\end{enumerate}
+
+Let's consider time complexity of the main phases of the algorithm:
+
+\begin{enumerate}
+    \item \textbf{ProcessScanDataForGroup} has complexity $O(\card{G} \cdot \lvert S \rvert)$, where $\lvert S \rvert$ is the total number of signals in all scans from all interfaces in $G$.
+    \item \textbf{Set Maximum Transmission Power} has complexity $O(\card{G})$
+    \item \textbf{Optimize Channel Selection} is an iterative algorithm, going for each $w_i \in G$ and for each channel $c \in w_i.channels$ running $OnIfaceInterference(G, w_i)$ until there is no improvement, so its worst-case time complexity can be estimated as $O(\card{G} \cdot C \cdot K \cdot \card{S_i})$, where $C$ is the number of channels and $K$ is the number of iterations.
+    \item \textbf{Adjust Transmission Power} is an iterative algorithm, going for each $w_i \in G$ until there is no improvement yielded by $FromIfaceInterference()$, so its worst-case time complexity can be estimated as $O(\card{G} \cdot K \cdot \card{G}) = O({\card{G}}^2 \cdot K)$, where $K$ is the number of iterations.
+    \item \textbf{Final Data Assembly and Event Generation} has complexity $O(\card{G})$
+\end{enumerate}
+
+\subsection{RRMGreedy flaws}
+\label{sec:flaws}
 
 
+\subsection{Evaluation on real-world data}
+\label{sec:eval}
+
+\subsection{Simulation}
+\label{sec:sim}
