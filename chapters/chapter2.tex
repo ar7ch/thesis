@@ -74,7 +74,7 @@ First, CleanAir is a flagship technology from Cisco \cite{CiscoCleanAirTechnolog
     \item CleanAir is event-driven, that means it can adapt to changing RF environment and adjust radio parameters in a matter of few minutes, drastically reducing downtime.
 \end{itemize}
 However, CleanAir is only available for the most expensive models in the Cisco product line, which makes it inapplicable for large-scale deployments. Also, lack of compatible radio analytics hardware from other vendors and implementation details render this technology fundamentally unusable for non-Cisco equipment.
-On the other hand, Cisco Catalyst product line of WLAN Controllers provide "regular" RRM functionality that only requires regular Wi-Fi chipset and can be used with all Cisco APs \cite{ciscoRadioResourceManagement}. It takes a super-cell approach: the elected WLAN Controller collects information about neighbors and channel situation for each AP within a group of APs that can hear each other, forming a \textit{RF Neighborhood}\cite{arenaUnderstandingTroubleshootingCisco2022}.
+On the other hand, Cisco Catalyst product line of WLAN Controllers provide "regular" RRM functionality that only requires regular Wi-Fi chipset and can be used with all Cisco APs \cite{ciscoRadioResourceManagement}. It takes a super-cell approach: the elected WLAN Controller collects information about neighbors and channel situation for each AP within a group of APs that can hear each other, forming a \textit{RF Neighborhood}  \cite{arenaUnderstandingTroubleshootingCisco2022}.
 
 \subsection{Juniper Networks}
 Juniper Networks offers Mist AI RRM technology to improve network performance. The notable features are \cite{junipernetworksUnderstandingRadioResource2023,RadioManagementTechnology}:
@@ -126,6 +126,7 @@ To make RRM decisions, ARM uses two metrics:
 \begin{itemize}
     \item \textbf{Coverage Index} - calculated as a ratio $\frac{x}{y}$, where $x$ is the AP's weighted calculation of SNR on all valid APs on a specified 802.11 channel, and $y$ is the weighted calculation of the AP's SNR the neighboring APs see on that channel.
     \item \textbf{Interference Index} - metric to measure co-channel and adjacent-channel interference, calculated as a sum of four quantities $a$, $b$, $c$, $d$:
+    \begin{itemize}
         \item $c$ is the channel interference the AP neighbors see on the selected channel.
         \item $d$ is the interference the AP neighbors see on the adjacent channel.
     \end{itemize}
