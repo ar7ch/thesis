@@ -62,11 +62,11 @@ Most of works on RRM consider \cite{bouhafsPerFlowRadioResource2020,levantiCAPWA
 
 \section {Proprietary RRM Solutions}
 \label{chap:lr:sec:prop_rrm}
-This section is dedicated to surveying proprietary RRM solutions from major vendors. We will consider Cisco, Juniper Networks, and Ruckus Networks, since they are the most popular vendors in enterprise WLAN market \cite{WiFiMarketSize}.
+This section is dedicated to surveying proprietary RRM solutions from major vendors. We will consider Cisco, Juniper Networks, and Ruckus Networks, since they are the most popular vendors in enterprise WLAN market \cite{WiFiMarketSize}. To the best of our knowledge, there are no peer-reviewed evaluations of Juniper Networks RRM efficiency, so we can only rely on vendor's claims.
 
 \subsection{Cisco}
 Cisco offers several RRM solutions.
-First, Cisco CleanAir is a flagship technology from Cisco \cite{CiscoCleanAirTechnology2014} to optimize network performance, avoid jamming, and detect interference sources, including non-802.11 ones. Cisco states that it outperforms competitors by:
+First, CleanAir is a flagship technology from Cisco \cite{CiscoCleanAirTechnology2014} to optimize network performance, avoid jamming, and detect interference sources, including non-802.11 ones. Cisco states that it outperforms competitors by:
 \begin{itemize}
     \item using dedicated hardware for RF analytics: Cisco Catalyst 9100 Series Access Points are equipped with \textit{scanning radio} that performs background RF scanning without occupying main APs radio transcievers, which allows to avoid interruptions in providing services to clients, and Cisco RF ASIC, a chip capable of performing wireless network analytics;
     \item classifying and visualizing interferers;
@@ -74,7 +74,7 @@ First, Cisco CleanAir is a flagship technology from Cisco \cite{CiscoCleanAirTec
     \item CleanAir is event-driven, that means it can adapt to changing RF environment and adjust radio parameters in a matter of few minutes, drastically reducing downtime.
 \end{itemize}
 However, CleanAir is only available for the most expensive models in the Cisco product line, which makes it inapplicable for large-scale deployments. Also, lack of compatible radio analytics hardware from other vendors and implementation details render this technology fundamentally unusable for non-Cisco equipment.
-On the other hand, Cisco Catalyst product line of WLAN Controllers provide "regular" RRM functionality that only requires regular Wi-Fi chipset and can be used with all Cisco APs \cite{ciscoRadioResourceManagement}.
+On the other hand, Cisco Catalyst product line of WLAN Controllers provide "regular" RRM functionality that only requires regular Wi-Fi chipset and can be used with all Cisco APs \cite{ciscoRadioResourceManagement}. It takes a super-cell approach: the elected WLAN Controller collects information about neighbors and channel situation for each AP within a group of APs that can hear each other, forming a \textit{RF Neighborhood}\cite{arenaUnderstandingTroubleshootingCisco2022}.
 
 \subsection{Juniper Networks}
 Juniper Networks offers Mist AI RRM technology to improve network performance. The notable features are \cite{junipernetworksUnderstandingRadioResource2023,RadioManagementTechnology}:
@@ -84,11 +84,66 @@ Juniper Networks offers Mist AI RRM technology to improve network performance. T
     \item Telemetry is sent to the Juniper Mist Cloud, so that the cloud can make regular adjustments to APs based on historical data and usage statistics;
     \item According to \cite{junipernetworksUnderstandingRadioResource2023}, a Reinforcement Learning (RL) approach is taken for channel and power planning of APs within a WLAN.
 \end{itemize}
-To the best of our knowledge, there are no peer-reviewed evaluations of Juniper Networks RRM efficiency, so we can only rely on vendor's claims.
 
 \subsection{Ruckus Networks}
 Ruckus Networks offers \cite{RuckusChannelFlyFeature2023} ChannelFly RRM technology that provides automatic channel selection, so power planning is not featured. As Ruckus describes, "ChannelFly constantly learns about each channel's capacity using actual activity on across all channels within the 2.4 and 5GHz bands. With this information, ChannelFly builds a statistical model over time to determine what channel will yield the greatest capacity for clients". Ruckus states that ChannelFly has no "dead time", as Ruckus calls the time period when an AP performs background scanning on different channels and is unable to communicate with its clients, which implies that Ruckus APs are also equipment with dedicated scanning radio.
 Another feature from Ruckus is "smart adaptive antenna array", which makes signal from Ruckus APs more directed to improve SNR.
+
+\subsection{Aruba Networks}
+Earlier RRM technology by Aruba is called ARM (Adaptive Radio Management) \cite{arubaARM}. It utilizes ACS and TPC features to improve RF situation in WLAN. While utilizing simple algorithmic techniques, it is notable for its comprehensive description by Aruba documentation, unlike solutions by other vendors.
+Let us note its main features \cite{ARMOverview}:
+\begin{itemize}
+    \item \textbf{Application Awareness}: since background scanning of channels required for gathering RRM statistics requires AP to go off-channel and stop serving clients as it hops over other channels for a certain time period ("dead time" in Ruckus terminology), Aruba allows to throttle background scanning based on traffic load. That is, in case of heavy traffic load, APs will reduce the frequency of background scanning, while resuming the normal frequency of background scanning when the traffic load is back to normal \cite{UnderstandingARM};
+    \item \textbf{Mode Awareness}: in case of too dense AP installation, excessive APs causing interference can be turned into Air Monitor mode, continuously sending RRM telemetry to a controller;
+    \item \textbf{Band Steering}: dual-band capable clients are encouraged to use 5GHz band;
+    \item \textbf{802.11n HT Mode Support}: ARM is able to use 40 MHz channel pair, automatically selecting primary and secondary operaing channels.
+    \item \textbf{Noise and Error Monitoring}: ARM is advertised to distinguish 802.11 and non-802.11 sources of noise.
+    \item \textbf{Spectrum Load Balancing}: by analyzing the number of clients for each of the neighboring access point, controller can identify APs with the higher client load and make them reject association request in favor of less loaded APs; However, a client can attempt to re-connect to the same APs on the second try and be admitted.
+    \item \textbf{Noise Interference Immunity}: essentially adjusts Rx sensitivity threshold, reducing time wasted on attempts of decoding weak and non-802.11 signals.
+\end{itemize}
+
+Reports from system administrators, though, suggest that RRM decisions in Aruba ARM are made by APs rather than controller. Among other user complains are unnecessary disabling of 2.4GHz radios, errorneous TPC leading to coverage holes \cite{TamingArubaARM2012}.
+
+However, ARM is a legacy technology. Its successor, Aruba AirMatch, introduced in recent ArubaOS versions, is a more sophisticated RRM technology, which is based on AI and machine learning and is able to perform channel and power planning on a WLAN-wide scale, suggesting ARM was implemented in a per-cell way and AirMatch is a super-cell solution.
+
+Notable AirMatch features:
+
+\begin{itemize}
+    \item Channel width adjustment based on device density - the more devices are connected to an AP, the narrower channel width is used to allow channel reuse and reduce interference;
+    \item APs measure RF environment for 5 minutes every 30 minutes;
+    \item Decisions based on a 24-hour period analytics unlike instant RF situation snapshots in ARM;
+    \item Elimination of coverage holes based on TPC.
+    \item Configurable thresholds in channel quality improvements to trigger channel and EIRP planning, default threshold is 15\%.
+    \item ClientMatch technology that manages clients: performs load balancing between APs, encourages clients to switch to APs providing better signal strength and using higher bands (5 GHz or event 6 GHz in 802.11ax)
+\end{itemize}
+
+Similarly to ARM, Aruba provides more information about AirMatch operating logic than other vendors about their RRM solutions.
+
+According to \cite{ArubaOSUserGuide}, AirMatch blacklists channel for channel selection if a radar was detected on it (in 5 GHz case) or in case if high noise level was detected on it (for all bands). In those cases, AirMatch will select channel with a manimum interference index.
+
+It is not clear if AirMatch uses the same metrics as ARM, but only ARM metrics are described in the documentation.
+To make RRM decisions, ARM uses two metrics:
+\begin{itemize}
+    \item \textbf{Coverage Index} - calculated as a ratio $\frac{x}{y}$, where $x$ is the AP's weighted calculation of SNR on all valid APs on a specified 802.11 channel, and $y$ is the weighted calculation of the AP's SNR the neighboring APs see on that channel.
+    \item \textbf{Interference Index} - metric to measure co-channel and adjacent-channel interference, calculated as a sum of four quantities $a$, $b$, $c$, $d$:
+        \item $c$ is the channel interference the AP neighbors see on the selected channel.
+        \item $d$ is the interference the AP neighbors see on the adjacent channel.
+    \end{itemize}
+\end{itemize}
+Additionally, Aruba APs collect several other metrics, including L2 metrics:
+
+\begin{itemize}
+    \item Amount of Retry frames (measured in \%)
+    \item Amount of Low-speed frames (measured in \%)
+    \item Amount of Non-unicast frames (measured in \%)
+    \item Amount of Fragmented frames (measured in \%)
+    \item Amount of Bandwidth seen on the channel (measured in kbps)
+    \item Amount of PHY errors seen on the channel (measured in \%)
+    \item Amount of MAC errors seen on the channel (measured in \%)
+    \item Noise floor value for the specified AP
+\end{itemize}
+
+As per Aruba documentation, those metrics "provide a snapshot of the current RF health state" \cite{ARMMetrics}, which implies they are only used for network administator's reference and are not employed in RRM decision-making.
 
 \section {Conclusion}
 \label{chap:lr:sec:conclusion}
