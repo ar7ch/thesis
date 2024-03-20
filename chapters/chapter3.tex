@@ -38,7 +38,7 @@ morestring=[b]'
 \label{chap:met}
 
 
-The purpose of this chapter is to lay a foundation for the further work in this Thesis via formal definition of RRM problem and analysis of existing RRM algorithm from Wimark Systems. The chapter is organized as follows. Section \ref{sec:prob} defines the problem of RRM and its goals. Section \ref{sec:baseline} describes the baseline RRM algorithm from Wimark Systems and considerations that led to such solution.
+The purpose of this chapter is to lay a foundation for the further work in this study via formal definition of RRM (Radio Resource Management) problem and analysis of existing RRM algorithm from Wimark Systems. The chapter is organized as follows. Section \ref{sec:prob} defines the problem of RRM and its goals. Section \ref{sec:baseline} describes the baseline RRM algorithm from Wimark Systems and considerations that led to such solution.
 
 
 \section{Problem statement}
@@ -47,14 +47,14 @@ The purpose of this chapter is to lay a foundation for the further work in this 
 
 \section{Baseline solution analysis --- RRMGreedy}
 \label{sec:baseline}
-The greedy RRM algorithm from Wimark Systems that we will refer to as \textit{RRMGreedy} is based on background scanning by access points. The goal of this thesis is to create a new RRM algorithm that is overall better in managing radio resources and at least not worse than \textit{RRMGreedy} in corner cases.
+The greedy RRM algorithm from Wimark Systems, which will be further referred to as \textit{RRMGreedy}, is based on background scanning by access points. The goal of this study is to create a new RRM algorithm that is overall better in managing radio resources and at least not worse than \textit{RRMGreedy} in corner cases.
 
 \subsection{RRMGreedy description}
-Here, we describe algorithm \textit{RRMGreedy}.
-As the name suggests, it tries to achieve optimal radio resource allocation in a greedy way, taking the local optimum for each device in a RRM group.
+This section describes \textit{RRMGreedy} algorithm.
+As the name suggests, the algorithm tries to achieve optimal radio resource allocation in a greedy way, taking the local optimum for each device in a RRM group.
 The algorithm operates on the granularity of interfaces rather than access points.
 
-In other words, we consider \textbf{RRM group} $G$ as a set of \textbf{wireless interfaces} $w$ (that we will further refer to as simply \textbf{interfaces}), where several interfaces can belong to a single access point.
+In other words, I consider \textbf{RRM group} $G$ as a set of \textbf{wireless interfaces} $w$ (that will be further referred to as simply \textbf{interfaces}), where several interfaces can belong to a single access point.
 On a high level, the algorithm consists of two main steps --- \textbf{Channel Selection} and \textbf{Transmit Power Adjustment}:
 \everymath{\displaystyle} % index underneath argmax
 \begin{enumerate}
@@ -64,8 +64,8 @@ On a high level, the algorithm consists of two main steps --- \textbf{Channel Se
             \begin{equation}
                 I = \sum_{i=0}^{\lvert G \rvert} OnIfaceInterference(w_i)
             \end{equation}
-        We denote initial group interference score as $I_{0}$.
-        \item for each $w_i$, compute its updated interference score for every channel possible for that interface $c^k_i$:
+        Initial group interference score is denoted as $I_{0}$.
+        \item for each $w_i$, compute its updated interference score for every channel $c^k_i$ available for that interface:
             \begin{equation}
                 interf_i = OnIfaceInterference(w_i, c^k_i)
             \end{equation}
@@ -76,7 +76,7 @@ On a high level, the algorithm consists of two main steps --- \textbf{Channel Se
 \item \textbf{Transmit Power Adjustment}:
     \begin{enumerate}
         \item Compute group interference as in step \ref{gi}
-        \item Identify the \textit{worst interface} interface $w_m$ experiencing \textit{worst interference} (i.e. whose interference score is the largest):
+        \item Identify the \textit{worst interface} $w_m$ causing the \textit{worst interference} (i.e. whose from-interference score is the largest):
             \begin{equation}
                 w_m = \argmax_i FromIfaceInterference(w_i)
             \end{equation}
@@ -85,7 +85,7 @@ On a high level, the algorithm consists of two main steps --- \textbf{Channel Se
 \end{enumerate}
 
 Listing \ref{lst:greedy} shows pseudocode for \textit{RRMGreedy}:
-\begin{lstlisting}[language={Pseudo}, caption=greedy RRM algorithm, label=lst:greedy]
+\begin{lstlisting}[language={Pseudo}, caption=greedy RRM algorithm., label=lst:greedy]
 Algorithm RRMAlgoGreedy
 Input:
     data: RRMInitData
@@ -130,7 +130,7 @@ End Algorithm
 
 Listing \ref{lst:process_scan_data_for_group} shows pseudocode for \textit{ProcessScanDataForGroup()} that splits measurement data from each interface.
 
-\begin{lstlisting}[language={Pseudo},caption=ProcessScanDataForGroup pseuodocode, label=lst:process_scan_data_for_group]
+\begin{lstlisting}[language={Pseudo},caption=ProcessScanDataForGroup pseudocode., label=lst:process_scan_data_for_group]
 For each scan from interface in RRM group
     For bssid, signaldata in scan
         channel := signaldata.channel
@@ -160,23 +160,23 @@ where:
         \begin{equation} scale(x) = \frac{x - minSignal}{maxSignal - minSignal} \end{equation}
     \item $w_i.TxDiff$ is a transmit power adjustment for $w_i$
 \end{itemize}
-as follows:
+In other words, the algorithm is as follows:
 
 \begin{enumerate}
-    \item \textbf{Calculate outer interference}: recall that \textbf{outer interference} is interference originating from access points not in the RRM group $G$.
-    Based on earlier measurements sent by $w_i$, for each sensed signal $s \in S_i = S^{inner}_i \cap S^{outer}_i$ we calculate adjacent-channel/co-channel interference score with \textit{ChannelInterference()} (Listing \ref{lst:channel_interf}). Then, for each signal on given channel, we calculate interference score as a product of \textit{ChannelInterference()} and signal power normalized to [0, 1] scale. Finally, we sum up interference scores for all signals on this channel.
+    \item \textbf{Calculate outer interference}: as defined earlier in this chapter, \textbf{outer interference} is interference originating from access points not in the RRM group $G$.
+    Based on earlier measurements sent by $w_i$, for each sensed signal $s \in S_i = S^{inner}_i \cap S^{outer}_i$, calculate adjacent-channel/co-channel interference score with \textit{ChannelInterference()}. This function, given current interface channel, its channel width, and some other channel, returns an estimation of interference between these channels using a simple heuristic (Listing \ref{lst:channel_interf}). Then, for each signal on a given channel, calculate interference score as a product of \textit{ChannelInterference()} and signal power normalized to [0, 1] scale. Finally, sum up interference scores for all signals on this channel.
     \begin{equation}
         interf^{outer}_i = \sum_{j=0}^{\lvert S^{outer}_i \rvert} ChannelInterference(w_i, s^j_i) \cdot \frac{signal^j_i - minSignal}{maxSignal - minSignal}
     \end{equation}
     where $S^{outer}_i$ is a set of signals sensed by $w_i$ on channels not in $\mathbf{G}$, $s^j_i$ is $j$-th signal in $S^{outer}_i$, $signal^j_i$ is power of $s^j_i$ normalized to [0, 1] scale, and $maxSignal$ is the maximum signal power in $S^{outer}_i$.
-    \item \textbf{Calculate inner interference}: recall that \textbf{inner interference} is interference originating from access points in the RRM group $G$. In the same way as for outer interference, we calculate interference score for each signal on given channel as a product of \textit{ChannelInterference()} and signal power normalized to [0, 1] scale. One difference is that TxDiff is taken into account for Tx power adjustment. Finally, we sum up interference scores for all signals on this channel.
+    \item \textbf{Calculate inner interference}: as defined earlier in this chapter, \textbf{inner interference} is interference originating from access points in the RRM group $G$. In the same way as for outer interference, calculate interference score for each signal on given channel as a product of \textit{ChannelInterference()} and signal power normalized to [0, 1] scale. One difference is that TxDiff is taken into account for Tx power adjustment. Finally, sum up interference scores for all signals on this channel.
     \begin{equation}
         interf^{inner}_i = \sum_{j=0}^{\lvert S^{inner}_i \rvert} ChannelInterference(w_i, s^j_i) \cdot \frac{signal^j_i + w_i.TxDiff}{maxSignal}
     \end{equation}
     where $S^{inner}_i$ is a set of signals sensed by $w_i$ on channels in $G$, $s^j_i$ is $j$-th signal in $S^{inner}_i$, $signal^j_i$ is power of $s^j_i$ normalized to [0, 1] scale, and $maxSignal$ is the maximum signal power in $S^{inner}_i$.
 \end{enumerate}
 
-\begin{lstlisting}[language={Pseudo}, caption=ChannelInterference() function, label=lst:channel_interf]
+\begin{lstlisting}[language={Pseudo}, caption=ChannelInterference() function., label=lst:channel_interf]
 Function ChannelInterference(ch1, ch2, width)
     add := 0
     If ch1 < 36 // channels less than 36 belong to 2.4 GHz band
@@ -188,7 +188,7 @@ Function ChannelInterference(ch1, ch2, width)
 \end{lstlisting}
 In \textit{ChannelInterference()}, the threshold for determining interference $width/5+add$ is a heuristic. It divides the channel width by 5, which suggests a rule of thumb about how close channels can be before they start to interfere significantly. The addition of add for lower 2.4 GHz channels suggests a more conservative threshold for these channels.
 
-\begin{lstlisting}[language={Pseudo}, caption=OnIfaceInterference() function, label=lst:interf_on_cpe]
+\begin{lstlisting}[language={Pseudo}, caption=OnIfaceInterference() function., label=lst:interf_on_cpe]
 Function InterferenceOnCPE(scandata, interface, interfaceChannel, interfaceChannelWidth)
     ifData := scandata[interface]
 
@@ -225,11 +225,11 @@ Function InterferenceOnCPE(scandata, interface, interfaceChannel, interfaceChann
     Return outerInterf + innerInterf
 \end{lstlisting}
 
-After the channel selection is completed, transmit power adjustment is performed. The goal of this step is to reduce transmit power of the interface that experiences the most interference from other interfaces in the group.
+After the channel selection is completed, algorithm performs transmit power adjustment. The goal of this step is to reduce transmit power of the interface that experiences the most interference from other interfaces in the group.
 
 Check all interfaces $w_i \in G$.
 If $w_i$ interferes with currently considered interface $w, w \ne w_i$,
-\begin{lstlisting}[language={Pseudo}, caption=FromIfaceInterference() function, label=lst:interf_from_cpe]
+\begin{lstlisting}[language={Pseudo}, caption=FromIfaceInterference() function., label=lst:interf_from_cpe]
 Function FromIfaceInterference(scandata, iface)
     sum := 0.0
     maxsignal := MinSignal
@@ -258,24 +258,24 @@ Function FromIfaceInterference(scandata, iface)
 
 \subsection{Evaluating asympotic complexity}
 \label{sec:complexity}
-We will now evaluate asymptotic complexity of \textit{RRMGreedy} algorithm.
-First, let us consider the complexity of auxiliary functions that are used:
+In this section, I evaluate asymptotic complexity of \textit{RRMGreedy} algorithm.
+First, I consider the complexity of used auxiliary functions:
 \begin{enumerate}
-    \item $ChannelInterference(ch_1, ch_2, width)$ has constant complexity $O(1)$.
+    \item $ChannelInterference(ch_1, ch_2, width)$ has constant complexity $O(1)$;
     \item $OnIfaceInterference(G, w_i)$ has complexity linear w.r.t. the number of signals sensed by $w_i$, i.e.,
-        $O(\card{S_i}) = O(\card{S^{outer}_i} + \card{S^{inner}_i})$
+        $O(\card{S_i}) = O(\card{S^{outer}_i} + \card{S^{inner}_i})$;
     \item $FromIfaceInterference(G, w_i)$ has complexity proportional to the product of number of interfaces in $G$ and amount of signal samples from $w_i$ heard by other interfaces, which is limited by some constant $C$, reasonably small in practice ($C < 10$), i.e.,
-        $O(\card{G} \cdot C) = O(\card{G})$
+        $O(\card{G} \cdot C) = O(\card{G})$.
 \end{enumerate}
 
-Let's consider time complexity of the main phases of the algorithm:
+Next, I analyze time complexity of the main phases of the algorithm:
 
 \begin{enumerate}
-    \item \textbf{ProcessScanDataForGroup} has complexity $O(\card{G} \cdot \lvert S \rvert)$, where $\lvert S \rvert$ is the total number of signals in all scans from all interfaces in $G$.
-    \item \textbf{Set Maximum Transmission Power} has complexity $O(\card{G})$
-    \item \textbf{Optimize Channel Selection} is an iterative algorithm, going for each $w_i \in G$ and for each channel $c \in w_i.channels$ running $OnIfaceInterference(G, w_i)$ until there is no improvement, so its worst-case time complexity can be estimated as $O(\card{G} \cdot C \cdot K \cdot \card{S_i})$, where $C$ is the number of channels and $K$ is the number of iterations.
-    \item \textbf{Adjust Transmission Power} is an iterative algorithm, going for each $w_i \in G$ until there is no improvement yielded by $FromIfaceInterference()$, so its worst-case time complexity can be estimated as $O(\card{G} \cdot K \cdot \card{G}) = O({\card{G}}^2 \cdot K)$, where $K$ is the number of iterations.
-    \item \textbf{Final Data Assembly and Event Generation} has complexity $O(\card{G})$
+    \item \textbf{ProcessScanDataForGroup} has complexity $O(\card{G} \cdot \lvert S \rvert)$, where $\lvert S \rvert$ is the total number of signals in all scans from all interfaces in $G$;
+    \item \textbf{Set Maximum Transmission Power} has complexity $O(\card{G})$;
+    \item \textbf{Optimize Channel Selection} is an iterative algorithm, going for each $w_i \in G$ and for each channel $c \in w_i.channels$ running $OnIfaceInterference(G, w_i)$ until there is no improvement, so its worst-case time complexity can be estimated as $O(\card{G} \cdot C \cdot K \cdot \card{S_i})$, where $C$ is the number of channels and $K$ is the number of iterations;
+    \item \textbf{Adjust Transmission Power} is an iterative algorithm, going for each $w_i \in G$ until there is no improvement yielded by $FromIfaceInterference()$, so its worst-case time complexity can be estimated as $O(\card{G} \cdot K \cdot \card{G}) = O({\card{G}}^2 \cdot K)$, where $K$ is the number of iterations;
+    \item \textbf{Final Data Assembly and Event Generation} has complexity $O(\card{G})$.
 \end{enumerate}
 
 \subsection{RRMGreedy flaws}
