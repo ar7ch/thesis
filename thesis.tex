@@ -18,7 +18,7 @@
 
 %%%%% ADDED TO SUPPORT TT BOLD FACES %%%%
 \DeclareFontShape{OT1}{cmtt}{bx}{n}{<5><6><7><8><9><10><10.95><12><14.4><17.28><20.74><24.88>cmttb10}{}
-\renewcommand{\ttdefault}{pcr}
+% \renewcommand{\ttdefault}{Computer Modern}
 %%%%% END %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{atbegshi,picture}
 \usepackage[T1]{fontenc}
@@ -43,7 +43,7 @@
 \newenvironment{bottompar}{\par\vspace*{\fill}}{\clearpage}
 \usepackage{amsmath,amsfonts}
 \DeclareMathOperator*{\argmin}{argmin}
-\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmax}{argmax}
 \usepackage{url}
 
 \let\openbox\relax
@@ -79,9 +79,6 @@
 \usepackage{color}
 \usepackage{xcolor}
 
-% \usepackage{anyfontsize}
-% \usepackage{mathptmx}
-% \usepackage{t1enc}
 
 \usepackage{chngcntr}
 \usepackage{upgreek}
@@ -145,6 +142,11 @@
    \begin{flushleft}\raggedleft #1\end{flushleft}
 }
 
+% \usepackage{algorithm}
+% \usepackage{algorithmicx}
+% \usepackage{algpseudocode}
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+
 \begin{document}
 
 \includepdf[offset=70 -60]{title.pdf}
@@ -159,7 +161,7 @@
 \include{chapters/chapter1}
 \include{chapters/chapter2}
 \include{chapters/chapter3}
-% \include{chapters/chapter4}
+\include{chapters/chapter4}
 % \include{chapters/chapter5}
 % \include{chapters/chapter6}
 

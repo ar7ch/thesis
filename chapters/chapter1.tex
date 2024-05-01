@@ -2,8 +2,6 @@
 \label{chap:intro}
 \chaptermark{}
 
-% Write 2-3 connected sentences representative of each of the following four functions in Introduction chapter:
-\section{Part 1. Introduction}
 % indicate the importance of your topic
 \subsection{Importance of the topic}
 Nowadays, wireless local area networks (WLAN) implementing IEEE 802.11 standards, commonly known under "Wi-Fi" brand, become an increasingly popular solution for last-mile internet access with a diverse population of users, starting from home Wi-Fi routers up to large campus- and city-scale WLANs with coverage areas reaching several square kilometers.
@@ -14,12 +12,16 @@ To meet current bandwidth and latency expectations of modern network application
 The problem of managing radio resources is studied extensively in the context of \textbf{cellular networks}, which are characterized by extensive frequencies reuse, large number of clients and large coverage areas spanning multiple kilometers, so the proper spectrum management is vital for operation of cells. This problem breaks down to the following: given a set of access points (or base stations in cellular terminology) $\boldsymbol{B}$, which can communicate over a set of channels $\boldsymbol{C}$, with a maximum transmit power of $P_{max}$, establish a radio link between a client device and an access point by assigning it a triplet $(b, c, p)$, where $b \in \boldsymbol{B}$, $c \in \boldsymbol{C}$, $p \leq P_{max}$.
 Essentially, RRM algorithms aim to provide such assignments that maximize the overall network performance.
 % indicate a lack or a gap in existing literature, possible limitations of the existing approaches
-\subsection{Limitations of existing approaches}
-A growing demand for Radio Resource Management (RRM) solutions, especially for large enterprise-grade multi-AP WLAN deployments, has led to the development of multiple commercial solutions, such as Cisco Radio Resource Management (RRM) \cite{ciscoRadioResourceManagement}, Aruba Adaptive Radio Management (ARM) \cite{UnderstandingARM}, and others. However, existing solutions offered by major vendors are proprietary, so their source code, used algorithms and details of operation are not disclosed.
+\subsection{Limitations of existing approaches and the goal of the study}
+A growing demand for Radio Resource Management (RRM) solutions, especially for large enterprise-grade multi-AP WLAN deployments, has led to the development of multiple commercial solutions, such as Cisco Radio Resource Management (RRM) \cite{ciscoRadioResourceManagement}, Aruba Adaptive Radio Management (ARM) \cite{UnderstandingARM}, and others. However, existing solutions offered by major vendors are proprietary, so their source code, used algorithms, and details of operation are not disclosed.
 In the same time, most studies on RRM have only focused on cellular networks, while RRM in 802.11 networks received much less attention. Many existing works on RRM in 802.11 networks have applicability problems, since real-world hardware poses constraints on what metrics can be retrieved from the wireless interface and which physical and link-level parameters can be adjusted.
-% indicate the contribution of your thesis project, establish its significance
-\subsection{Contribution and significance of the thesis}
+
+Thus, we can identify a research gap: 
+
 This study aims to fill this gap by proposing a new RRM algorithm that, unlike existing market solutions, is publicly available, and at least as effective, while being practical and applicable to real-world WLAN deployments.
+
+% indicate the contribution of your thesis project, establish its significance
+\subsection{Contribution and significance of the study}
 By analyzing theoretical works on 802.11 RRM, we come up with suitable optimization approach that combines both Adaptive Channel Selection (ACS) and Transmit Power Control (TPC) techniques to improve RF spectrum situation EM compatibility and channel reuse, which in turn leads to improved capacity of a wireless network.
 
 Our RRM approach is encompassed within the centralized architecture, introduced by Cisco as Unified Wireless Network (UWN) \cite{CiscoUnifiedWirelessa}, a highly centralized wired-wireless architecture controlled by a Wireless LAN Controller (WLC). This approach allows for a more efficient spectrum management, as the WLC can collect data from all access points and make decisions based on the global view of the network, which is not possible in a distributed architecture, where each access point makes decisions independently.
@@ -35,7 +37,7 @@ Below in this chapter, we briefly review the fundamentals of Radio Frequency (RF
 
 \section{Overview of IEEE 802.11 standard}
 
-Throughout this Thesis, we will refer to field-specific terms, whose definitions are given in Table \ref{defs_table}:
+Throughout this Thesis, I refer to field-specific terms, whose definitions are given in Table \ref{defs_table}:
 
 \makeatletter
 \let\@currsize\normalsize
@@ -96,7 +98,7 @@ The 5 GHz U-NII (Unlicensed National Information Infrastructure) series of bands
 
 \subsection{Signal quality and its metrics}
 
-Thus, the presence of physical obstructions, background noise and interference from other access points urges us to explore possible measurements and metrics for a wireless signal quality. Below, we will briefly describe the most widely used quantities:
+Thus, the presence of physical obstructions, background noise and interference from other access points urges us to explore possible measurements and metrics for a wireless signal quality. Below, I briefly describe the most widely used quantities:
 
 A measure widely used in RF engineering and employed by Wi-Fi vendors is \textbf{Signal-to-Noise Ratio (SNR)}, which is defined as a ratio between the received signal power and the power of background noise:
 \begin{equation}

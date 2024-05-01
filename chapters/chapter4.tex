@@ -1,53 +1,48 @@
-\chapter{Implementation}
+\chapter{Implementation and evaluation}
 \label{chap:impl}
 
-\begin{longtable}{c|c}
-\caption[This is the title I want to appear in the List of Tables]{Simulation Parameters} \label{table:fousimulation_params} \\
-\hline
-A & B  \\
-\hline
-\endfirsthead
-\multicolumn{2}{@{}l}{} \\
-\hline
-A & B \\
-\hline
-\endhead
-\hline
- \textbf{Parameter} & \textbf{Value}\\
- \hline
- Number of vehicles & $|\mathcal{V}|$\\
- \hline
- Number of RSUs & $|\mathcal{U}|$\\
- \hline
- RSU coverage radius & 150 m\\
- \hline
- V2V communication radius & 30 m\\
- \hline
- Smart vehicle antenna height & 1.5 m\\
- \hline
- RSU antenna height & 25 m\\
- \hline
- Smart vehicle maximum speed & $v_{max}$ m/s\\
- \hline
- Smart vehicle minimum speed & $v_{min}$ m/s\\
- \hline
- Common smart vehicle cache capacities & $[50, 100, 150, 200, 250]$ mb\\
- \hline
- Common RSU cache capacities & $[5000,1000,1500,2000,2500]$ mb\\
- \hline
- Common backhaul rates & $[75, 100, 150]$ mb/s\\
- \hline
-\end{longtable}
+This chapter is dedicated to implementing the RRMv2 algorithm described in Chapter \ref{chap:research} and evaluating its performance compared with existing algorithms. In this study, I used the ns-3 discrete-event simulation framework for implementing and evaluating different RRM algorithms.
 
-\begin{figure}[hbt]
-\centering
-\includegraphics[]{figs/inno.png}
-\caption{One kernel at $x_s$ (\emph{dotted kernel}) or two kernels at
-$x_i$ and $x_j$ (\textit{left and right}) lead to the same summed estimate
-at $x_s$. This shows a figure consisting of different types of
-lines. Elements of the figure described in the caption should be set in
-italics, in parentheses, as shown in this sample caption.}
-\label{fig:fouex}
-\end{figure}
+The chapter is organized as follows.
+Section \ref{chap:impl:sec:simulation_method} describes the simulation methodology used to evaluate the performance of RRM algorithms, and the process of adjusting ns-3 to needs of running and evaluating RRM algorithms.
+Section \ref{chap:impl:sec:implementation} describes my implementation of RRMv2, RRMGreedy, and Least Congested Channel Search (LCCS) algorithms in ns-3.
+Section \ref{chap:impl:sec:eval} presents the results of the simulation study, comparing RRM algorithms: RRMv2, RRMGreedy, and Least Congested Channel Search (LCCS), a simple per-cell algorithm implemented in practically every home Wi-Fi router, in terms of network throughput and interference.
+Finally, Section \ref{chap:impl:sec:conclusion} concludes the chapter with a summary of the results and a discussion of the implications of the study.
 
-\ldots
+\section{Simulation methodology}
+\label{chap:impl:sec:simulation_method}
+In this study, I implement LCCS, RRMGreedy and RRMv2 algorithms in ns-3 simulator to have a scalable, flexible (from dozens to hundreds of APs), and reproducible (unlike real-world testbeds) way to evaluate performance of different RRM algorithms under different conditions.
+
+The ns-3 simulator is a comprehensive tool for research in computer networks, modeling each layer of the OSI model and providing simulations for wired and wireless communication technologies and protocols, including LTE, Wi-Fi, and Ethernet. Nevertheless, despite its extensive capabilities, there is a limited support for simulating RRM algorithms.
+
+In addressing this gap, \cite{bharadwajSimulationFrameworkRadio2017} introduced an RRM framework that employs an additional radio interface, termed a "scan interface." Unlike the standard "data interface" used for communication, the scan interface periodically surveys a specified set of channels. It operates in \textit{promiscuous mode}, allowing it to capture all frames and physical layer headers intercepted by the data interface. Thus, scan interface is able to record Received Signal Strength Indicator (RSSI) values from transmissions between devices that the data interface is engaged with. This resembles scanning radios found in high-end Cisco access points. Unlike the Cisco solution, this scanning interface, however, can be used both with stations and access points.
+
+However, this model presents several deviations from real-world scenarios:
+\begin{itemize}
+    \item Most hardware, apart from high-end Cisco models, lacks a dedicated scanning interface, leading to scanning activities disrupting normal data exchanges. This interruption, referred to as "dead time," denotes periods when scanning supersedes the standard operation of an Access Point (AP).
+    \item For mobile devices, where battery efficiency is paramount, scanning capabilities are significantly restricted.
+    \item The \textit{RriModule} code and its associated examples, designed for ns-3 version 3.20, are incompatible with the current ns-3 version 3.40 API and the legacy Waf build system. As a part of my contribution, I have refactored the original code to align with the latest ns-3 version 3.41 API, specifically updating the \textit{RriModule} to integrate with the latest \textit{WifiMac} ns-3 API and the CMake build system. This adaptation ensures the compatibility and execution on the newest ns-3 version. The modified source code is publicly available on GitHub.
+\end{itemize}
+
+In real-world scenarios, wireless access points implement scanning by setting the wireless adapter to monitor mode and sequentially switching to each channel that requires scanning. Although direct support for monitor mode is absent in ns-3, a comparable functionality can be simulated using the \texttt{MonitorSnifferRx} event source. Subscribing to such events allows for the interception of all frames that the physical layer of the access point can receive and demodulate, even if those frames would be normally discarded as not intended for the current AP. However, this method does not exclude standard operations of an access point; the AP still continues to receive and transmit frames. This is not the case in actual access points, where operating monitor mode is mutually exclusive to AP's normal operation. To achieve nearly the same result, my approach prevents the AP from transmitting frames during the scanning period.
+
+Another limitation I have encountered during the implementation is the lack of channel switching logic for unassociated stations performing scans to discover an access point for association. In practical scenarios, stations scan all available channels within the operating bands to discover access points, however, as of the latest ns-3 version 3.41, released in February 2024, such functionality is absent in \texttt{ns3::StaWifiMac} class, which implements the logic for STA (stations) operation. Consequently, ns-3 Wi-Fi stations can only scan for APs present on the current operating channel. For instance, if both AP and stations are on channel 1, and the AP shifts to channel 6, the stations remain unable to scan beyond channel 1 to ascertain the AP's new location on channel 6. To address this problem, I have implemented a custom scanning logic, allowing stations to scan all available channels in its operating band. This amendment is available in the modified source code on GitHub.
+
+
+\section{Implementation}
+\label{chap:impl:sec:implementation}
+This section provides an implementation of various Radio Resource Management (RRM) strategies, utilizing the ns-3 discrete-event simulation framework.
+
+\subsection{Least Congested Channel Search (LCCS)}
+\label{chap:impl:sec:implementation:lccs}
+LCCS is a patented local per-cell algorithm described in \cite{achantaMethodApparatusLeast2006}. Essentially, it breaks down to estimating the interference level on each channel and selecting the least congested one. The algorithm is implemented in practically every home Wi-Fi router. The algorithm is simple, but it does not coordinate channel selection across multiple APs, which is crucial for performance in large-scale deployments.
+To implement LCCS in ns-3, I introduce an external \texttt{LCCScanner} class, without intervening in the ns-3 model source code. The \texttt{LCCScanner} class is invoked on \texttt{MonitorSnifferRx} event, simulating receiving frames in monitor mode. For each received frame, if this frame comes from an AP (either a beacon frame or has \texttt{FromDs} flag set to 1), it is added to \texttt{knownAps} table.
+
+
+\section{Evaluation}
+\label{chap:impl:sec:eval}
+TBD
+
+\section{Conclusion}
+\label{chap:impl:sec:conclusion}
+TBD

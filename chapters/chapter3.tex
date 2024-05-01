@@ -1,82 +1,49 @@
-\definecolor{codegreen}{rgb}{0,0.6,0}
-\definecolor{codegray}{rgb}{0.5,0.5,0.5}
-\definecolor{codepurple}{rgb}{0.58,0,0.82}
-\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\newcommand{\rrmG}{$\boldsymbol{G}$}
 
-\lstdefinestyle{mystyle}{
-    backgroundcolor=\color{backcolour},
-    commentstyle=\color{codegreen},
-    keywordstyle=\color{magenta},
-    numberstyle=\tiny\color{codegray},
-    stringstyle=\color{codepurple},
-    basicstyle=\ttfamily\footnotesize,
-    breakatwhitespace=false,
-    breaklines=true,
-    captionpos=b,
-    keepspaces=true,
-    numbers=left,
-    numbersep=5pt,
-    showspaces=false,
-    showstringspaces=false,
-    showtabs=false,
-    tabsize=2
-}
+\chapter{Baseline solution analysis and algorithm design}
+\label{chap:research}
 
-\lstdefinelanguage{Pseudo}
-{
-morekeywords={and,break,do,else,elseif,end,false,for,function,if,in,local,nil,not,or,repeat,return,then,true,until,while,_G,_ENV,table,every,Repeat,If,For,Continue,Function,End,Return,Then,Else,While,Do,Until,And,Or,Local,Nil,False,True,Not,In},
-sensitive=false,
-morecomment=[l]{//},
-morecomment=[s]{--[[}{]]},
-morestring=[b]",
-morestring=[b]'
-}
-
-\lstset{style=mystyle}
-
-\chapter{Problem statement and baseline solution analysis}
-\label{chap:met}
-
-
-The purpose of this chapter is to lay a foundation for the further work in this study via formal definition of RRM (Radio Resource Management) problem and analysis of existing RRM algorithm from Wimark Systems. The chapter is organized as follows. Section \ref{sec:prob} defines the problem of RRM and its goals. Section \ref{sec:baseline} describes the baseline RRM algorithm from Wimark Systems and considerations that led to such solution.
+The chapter is organized as follows. Section \ref{chap:research:sec:problem_statement} defines the problem of RRM and objectives of an RRM algorithm.
+Section \ref{sec:baseline} describes the RRM algorithm called RRMGreedy, developed by a Russian telecommunications vendor, analyzes the flow and asymptotic complexity of the algorithm, and identifies flaws and limitations of RRMGreedy. The objective of this study is to create an algorithm outperforming RRMGreedy in terms of network capacity and throughput; in Section \ref{chap:research:sec:rrmv2} I propose a new RRM algorithm, called RRMv2, that addresses the limitations of RRMGreedy.
 
 
 \section{Problem statement}
-\label{sec:prob}
-
+\label{chap:research:sec:problem_statement}
+Using the RRM problem definition from \ref{chap:lr:sec:math_models}, I define the problem as follows: given a set of access points $AP = \{AP_1, AP_2, \ldots, AP_n\}$, where each access point $AP_i$ has a set of wireless interfaces $W_i = \{w_{i1}, w_{i2}, \ldots, w_{im}\}$, where each interface $w_{ij}$ can operate on a set of channels $C = \{c_1, c_2, \ldots, c_k\}$, the goal is to find a channel assignment $f: W \to C$ and transmit power assignment $g: W \to P$ that maximizes network throughput and capacity. The problem can be formulated as a combinatorial optimization problem, where the goal is to find a configuration of channels and transmit powers that maximizes the objective function, which is a function of network throughput and capacity.
 
 \section{Baseline solution analysis --- RRMGreedy}
 \label{sec:baseline}
-The greedy RRM algorithm from Wimark Systems, which will be further referred to as \textit{RRMGreedy}, is based on background scanning by access points. The goal of this study is to create a new RRM algorithm that is overall better in managing radio resources and at least not worse than \textit{RRMGreedy} in corner cases.
+The greedy RRM algorithm, used by a major telecommunications vendor, which will be further referred to as \textit{RRMGreedy}, is based on background scanning by access points. The goal of this study is to create a new RRM algorithm aligning with requirements and addressing the research gap formulated in Section \ref{chap:lr:sec:conclusion}.
+In particular, the novel algorithm should result in network throughput and capacity greater or equal than \textit{RRMGreedy} in corner cases. In this light, I start with describing \textit{RRMGreedy},
 
-\subsection{RRMGreedy description}
+\subsection{RRMGreedy: flow description}
 This section describes \textit{RRMGreedy} algorithm.
 As the name suggests, the algorithm tries to achieve optimal radio resource allocation in a greedy way, taking the local optimum for each device in a RRM group.
-The algorithm operates on the granularity of interfaces rather than access points.
+The algorithm operates on the granularity of interfaces rather than access points. I consider it to be reasonable, since practically different interfaces operate on completely different frequency bands, so when are dealing with, for example, 5 GHz band, the whole access point can be considered as a single interface.
 
 In other words, I consider \textbf{RRM group} $G$ as a set of \textbf{wireless interfaces} $w$ (that will be further referred to as simply \textbf{interfaces}), where several interfaces can belong to a single access point.
 On a high level, the algorithm consists of two main steps --- \textbf{Channel Selection} and \textbf{Transmit Power Adjustment}:
-\everymath{\displaystyle} % index underneath argmax
+\everymath{\displaystyle}
 \begin{enumerate}
 \item \textbf{Channel Selection}:
     \begin{enumerate}
-        \item \label{gi} compute \textbf{group interference} $I$ --- sum of interference scores for each interface in group:
+        \item \label{gi} compute \textbf{group interference} $I_{G}$ --- sum of interference scores for each interface in group:
             \begin{equation}
-                I = \sum_{i=0}^{\lvert G \rvert} OnIfaceInterference(w_i)
+                I_{G} = \sum_{i=0}^{\lvert G \rvert} OnIfaceInterference(w_i)
             \end{equation}
         Initial group interference score is denoted as $I_{0}$.
         \item for each $w_i$, compute its updated interference score for every channel $c^k_i$ available for that interface:
             \begin{equation}
                 interf_i = OnIfaceInterference(w_i, c^k_i)
             \end{equation}
-        If there is a channel $c^k_i$ which reduced $interf_i$, update interface settings to issue change to that channel later.
+        If there is a channel $c^k_i$ that reduced $interf_i$, update interface settings to issue change to that channel later.
         \item \textbf{continue while there is an improvement}, i.e., previous group interference score is larger than the latest one:
         $I_{j-1} > I_{j}$ for $j > 1$
     \end{enumerate}
 \item \textbf{Transmit Power Adjustment}:
     \begin{enumerate}
         \item Compute group interference as in step \ref{gi}
-        \item Identify the \textit{worst interface} $w_m$ causing the \textit{worst interference} (i.e. whose from-interference score is the largest):
+        \item Identify the \textit{worst interface} $w_m$ causing the \textit{worst interference} (i.e., whose from-interference score is the largest):
             \begin{equation}
                 w_m = \argmax_i FromIfaceInterference(w_i)
             \end{equation}
@@ -84,67 +51,101 @@ On a high level, the algorithm consists of two main steps --- \textbf{Channel Se
     \end{enumerate}
 \end{enumerate}
 
-Listing \ref{lst:greedy} shows pseudocode for \textit{RRMGreedy}:
-\begin{lstlisting}[language={Pseudo}, caption=greedy RRM algorithm., label=lst:greedy]
-Algorithm RRMAlgoGreedy
-Input:
-    data: RRMInitData
-Output:
-    GroupDataWithEvent: final configuration and event data for CPEs
-Begin
-    // Step 0: Prepare raw scanning data received from APs
-    scandata := ProcessScanDataForGroup(data.CPEs, data.ScanData)
+\renewcommand{\algorithmcfname}{ALGORITHM}
+\SetAlFnt{\small}
+\SetAlCapFnt{\small}
+\SetAlCapNameFnt{\small}
+\SetAlCapHSkip{0pt}
+\IncMargin{-\parindent}
+\LinesNumbered
+\begin{algorithm}[H]
+\caption{RRMGreedy}
+\label{alg:greedyRRM}
 
-    // Step 1: Set Maximum Transmission Power
-    For each cpe in data.CPEs
-        For each iface in cpe.State.Wifi
-            MaxIfaceTxPower := Max Tx power for given hardware
-            scandata[iface].TxDiff := MaxIfaceTxPower - iface.TxPower
+\SetKwInput{KwInput}{Input}
+\SetKwInput{KwOutput}{Output}
+\SetKwInput{KwData}{Data}
+\SetKwComment{Comment}{$\triangleright$\ }{}
+\SetKwFor{For}{for}{do}{endfor}
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{endif}
+\SetKwRepeat{Repeat}{repeat}{until}
 
-    // Step 2: Optimize Channel Selection
-    // calculate initial group interference
-    groupInterference := GroupInterference(scandata)
-    Repeat until no improvement in groupInterference
-        For each cpe in data.CPEs
-            For each iface in cpe.State.Wifi
-                bestChannel := choose channel that yields minimal InterferenceOnCPE(scandata, channel, width) for this iface
-                scandata[iface].channel := bestChannel
-        Recalculate groupInterference := GroupInterference(scandata)
+\DontPrintSemicolon
 
-    // Step 3: Adjust Transmission Power (if enabled)
-    If TPC enabled
-        Repeat until no improvement in groupInterference
-            Identify worst-performing interface using InterferenceFromCPE
-            Calculate needpower and bestpower for worst interface
-            Update scandata with new Tx power settings
-            Evaluate total interference using GroupInterference
+\KwInput{
+    $\boldsymbol{scandata}$: scanning data from access points \newline
+    $\boldsymbol{G}$: set of wireless interfaces within the RRM group and its settings
+}
+\KwOutput{$\boldsymbol{resultConfig}$: final configuration for access points}
 
-    // Step 4: Final Data Assembly and Event Generation
-    finaldata, eventsData := Assemble final configuration and events
-    If no significant improvement in interference
-        Return error "No significant changes made"
+\BlankLine
+groupState $\gets$ PreprocessRRMData($\boldsymbol{G}$, scandata)\;
+\BlankLine
+\tcp{Step 1: Set Maximum Transmission Power}
+\For{each interface in $\boldsymbol{G}$}{
+    $P_i \gets$ Max Tx power for given interface\;
+    groupState[interface].TxDiff $\gets (P_i - interface.TxPower)$\;
+}
+\BlankLine
+\tcp{Step 2: Greedy Channel Search}
+groupInterference $\gets$ GroupInterference(groupState)\;
+\Repeat{no improvement in groupInterference}{
+    \For{each interface in $\boldsymbol{G}$}{
+        $\boldsymbol{C_i} \gets$ available channels for interface\;
+        newChannel $\gets \argmin_{ch \in \boldsymbol{C_i}} OnIfaceInterference(groupState,interface, ch)$\;
+        groupState[interface].channel $\gets$ newChannel\;
+    }
+    groupInterference $\gets$ GroupInterference(scandata)\;
+}
+\BlankLine
+\tcp{Step 3: Adjust Transmission Power (if enabled)}
+\Repeat{no improvement in groupInterference}{
+    \tcp{Identify the "worst interface" $interface_{worst}$ --- the one causing the most interference for other APs}
+    $interface_{worst}$ $\gets \argmax_{w_i \in G} FromIfaceInterference(groupState, w_i)$\;
+    newTxPower $\gets \frac{1}{2}(interface_{worst}.TxPower + minTxPower)$ \;
+    groupState[$interface_{worst}$].TxPower $\gets$ newTxPower\;
+    groupInterference $\gets$ GroupInterference(scandata)\;
+}
+\BlankLine
+\tcp{Step 4: Send configuration changes to AP}
+$\boldsymbol{resultConfig} \gets$ getUpdatedConfiguration(groupState)\;
+\Return{$\boldsymbol{resultConfig}$}\;
+\end{algorithm}
 
-    Return finaldata and eventsData
-End Algorithm
-\end{lstlisting}
+After providing a high-level overview of the algorithm, I will analyze the used functions, since they contain the core logic of the algorithm. These functions will be discussed in the order they are executed within the algorithm.
 
-Listing \ref{lst:process_scan_data_for_group} shows pseudocode for \textit{ProcessScanDataForGroup()} that splits measurement data from each interface.
+Function \textit{PreprocessRRMData()} does not perform actual RRM logic and is used to preprocess the data for further calculations. Namely, it reorganizes scan results for each interface in a way that for every channel every interface maintains a list of
+\begin{itemize}
+    \item Signals originating from access points within the RRM group \rrmG. In RRMGreedy, such signals are called \textit{inner} signals;
+    \item Signals originating from access points outside of the RRM group (i.e., coming from \textit{rogue APs}). In RRMGreedy terms, such signals are called \textit{outer} signals.
+\end{itemize}
+The pseudocode for \textit{PreprocessRRMData()} is shown in Algorithm \ref{alg:processScanDataForGroup}.
 
-\begin{lstlisting}[language={Pseudo},caption=ProcessScanDataForGroup pseudocode., label=lst:process_scan_data_for_group]
-For each scan from interface in RRM group
-    For bssid, signaldata in scan
-        channel := signaldata.channel
-        If bssid in RRMGroup
-            interface.Inner[channel].append(signaldata)
-        Else
-            interface.Outer[channel].append(signaldata)
-\end{lstlisting}
+\begin{algorithm}[H]
+\label{alg:processScanDataForGroup}
+\caption{PreprocessRRMData}
+\DontPrintSemicolon
+
+\ForEach{interface in \rrmG}{
+    scanFromIface $\gets$ scandata[interface]\;
+    \ForEach{BSSID, signalData in scanFromIface}{
+        channel $\gets$ signalData.channel\;
+        \eIf{bssid in RRMGroup}{
+            interface.InnerBSS[channel].append(signalData)\;
+        }{
+            interface.OuterBSS[channel].append(signalData)\;
+        }
+    }
+}
+\end{algorithm}
+The result of PreprocessRRMData is saved in a table called \textit{groupState}. This structure maintains updated channel and transmit power settings for each interface in the RRM group as RRMGreedy progresses.
 
 
-Listing \ref{lst:interf_on_cpe} shows pseudocode for \textit{OnIfaceInterference()} function that calculates interference experienced by given wireless interface from outer and inner sources.
-Essentially, it breaks down to calculating
+% Algorithm \ref{lst:interf_on_cpe} is a pseudocode for 
+Function \textit{OnIfaceInterference(groupState, interface, channel)} calculates interference experienced by given access point (and thus by its wireless interface) from outer and inner signals.
+Essentially, it breaks down to calculating:
 \begin{equation}
-    interf_i = OnIfaceInterference(w_i, channel, width) = interf^{outer}_i + interf^{inner}_i
+    interf_i = OnIfaceInterference(w_i, channel) = interf^{outer}_i + interf^{inner}_i
 \end{equation}
 \begin{equation}
     interf^{outer}_i = \sum_{j=0}^{\lvert S^{outer}_i \rvert} ChannelInterference(w_i, s^{j}_i) \cdot scale(s^j_i)
@@ -164,100 +165,128 @@ In other words, the algorithm is as follows:
 
 \begin{enumerate}
     \item \textbf{Calculate outer interference}: as defined earlier in this chapter, \textbf{outer interference} is interference originating from access points not in the RRM group $G$.
-    Based on earlier measurements sent by $w_i$, for each sensed signal $s \in S_i = S^{inner}_i \cap S^{outer}_i$, calculate adjacent-channel/co-channel interference score with \textit{ChannelInterference()}. This function, given current interface channel, its channel width, and some other channel, returns an estimation of interference between these channels using a simple heuristic (Listing \ref{lst:channel_interf}). Then, for each signal on a given channel, calculate interference score as a product of \textit{ChannelInterference()} and signal power normalized to [0, 1] scale. Finally, sum up interference scores for all signals on this channel.
+    Based on earlier measurements sent by $w_i$, for each sensed signal $s \in S_i = S^{inner}_i \cap S^{outer}_i$, calculate adjacent-channel/co-channel interference score with \textit{ChannelInterference()}. This function, given current interface channel, its channel width, and some other channel, returns an estimation of interference between these channels using a simple heuristic (Listing \ref{lst:channel_interf}). Then, for each signal on a given channel, calculate interference score as a product of \textit{ChannelInterference()} and signal power normalized to [0, 1] scale; finally, sum up interference scores for all signals on this channel:
     \begin{equation}
         interf^{outer}_i = \sum_{j=0}^{\lvert S^{outer}_i \rvert} ChannelInterference(w_i, s^j_i) \cdot \frac{signal^j_i - minSignal}{maxSignal - minSignal}
     \end{equation}
     where $S^{outer}_i$ is a set of signals sensed by $w_i$ on channels not in $\mathbf{G}$, $s^j_i$ is $j$-th signal in $S^{outer}_i$, $signal^j_i$ is power of $s^j_i$ normalized to [0, 1] scale, and $maxSignal$ is the maximum signal power in $S^{outer}_i$.
-    \item \textbf{Calculate inner interference}: as defined earlier in this chapter, \textbf{inner interference} is interference originating from access points in the RRM group $G$. In the same way as for outer interference, calculate interference score for each signal on given channel as a product of \textit{ChannelInterference()} and signal power normalized to [0, 1] scale. One difference is that TxDiff is taken into account for Tx power adjustment. Finally, sum up interference scores for all signals on this channel.
+    \item \textbf{Calculate inner interference}: as defined earlier in this chapter, \textbf{inner interference} is interference originating from access points in the RRM group $G$. In the same way as for outer interference, calculate interference score for each signal on given channel as a product of \textit{ChannelInterference()} and signal power normalized to [0, 1] scale. One difference is that TxDiff is taken into account for Tx power adjustment; finally, sum up interference scores for all signals on this channel:
     \begin{equation}
         interf^{inner}_i = \sum_{j=0}^{\lvert S^{inner}_i \rvert} ChannelInterference(w_i, s^j_i) \cdot \frac{signal^j_i + w_i.TxDiff}{maxSignal}
     \end{equation}
     where $S^{inner}_i$ is a set of signals sensed by $w_i$ on channels in $G$, $s^j_i$ is $j$-th signal in $S^{inner}_i$, $signal^j_i$ is power of $s^j_i$ normalized to [0, 1] scale, and $maxSignal$ is the maximum signal power in $S^{inner}_i$.
 \end{enumerate}
 
-\begin{lstlisting}[language={Pseudo}, caption=ChannelInterference() function., label=lst:channel_interf]
-Function ChannelInterference(ch1, ch2, width)
-    add := 0
-    If ch1 < 36 // channels less than 36 belong to 2.4 GHz band
-        add := 1
-    If abs(ch1 - ch2) >= width / 5 + add
-        Return 0  // No significant interference
-    Else
-        Return 1  // Significant interference
-\end{lstlisting}
-In \textit{ChannelInterference()}, the threshold for determining interference $width/5+add$ is a heuristic. It divides the channel width by 5, which suggests a rule of thumb about how close channels can be before they start to interfere significantly. The addition of add for lower 2.4 GHz channels suggests a more conservative threshold for these channels.
+\begin{algorithm}[H]
+\caption{ChannelInterference()}
+\label{lst:channel_interf}
+\DontPrintSemicolon % Don't print semicolons at the end of each line
+\SetKwFunction{FMain}{ChannelInterference}
+\SetKwProg{Fn}{Function}{:}{}
+\Fn{\FMain{$ch_1$, $ch_2$, width}}{
+    add $\gets$ 0\;
+    \If{$ch_1 < 36$}{ % channels less than 36 belong to 2.4 GHz band
+        add $\gets$ 1\;
+    }
+    \eIf{$\card{ch_1 - ch_2} \geq \frac{width}{5} + add$}{
+        \Return 0  % No significant interference
+    }{
+        \Return 1  % Significant interference
+    }
+}
+\end{algorithm}
 
-\begin{lstlisting}[language={Pseudo}, caption=OnIfaceInterference() function., label=lst:interf_on_cpe]
-Function InterferenceOnCPE(scandata, interface, interfaceChannel, interfaceChannelWidth)
-    ifData := scandata[interface]
+In \textit{ChannelInterference()}, it is assumed that the distance between orthogonal channels is 5 MHz. Thus, given a 2.4 GHz band and 20 MHz width, the distance between two channels should be at least 5. The interval of length $n$ should have $n-1$ channels in between, which is the reason for the $add$ factor.
 
-    // Calculate interference from outer APs
-    outerInterf := 0
-    For each otherChannel, signalData in ifData.Outer
-        inteferenceScore := ChannelInterference(otherChannel, interfaceChannel, interfaceChannelWidth)
-        If ci == 0 // channels are orthogonal
-            Continue
-        // calculate cumulative interference score for all signals on this channel
-        chsum := 0.0
-        For each signal in signalData // every signal sensed on otherChannel
-            sigRating := signal power (in dBm) normalized to [0, 1] scale
-            chsum += interferenceScore * sigRating
-        outerInterf += chsum
+\begin{algorithm}[H]
+\caption{OnIfaceInterference()}
+\DontPrintSemicolon
+\KwIn{
+    $groupState$: table containing state of \rrmG \newline
+    $interface$: interface to calculate interference for
+    $channel$: channel to calculate interference on
+}
+\KwOut{Estimated cumulative interference score experienced by $interface$}
 
-    // Calculate interference from inner APs
-    innerInterf := 0
-    For each otherChannel, signalData in ifData.Inner
-        oth, ok := data[othKey]
-        If not ok
-            Continue
-        ci := ChannelInterference(oth.Settings.Central, ch, width)
-        If ci == 0
-            Continue
-        chsum := 0.0
-        For each signal in signalData
-            sourceInterface := interface from where signal origins
-            adjustedSignal := signal + sourceInterface.TxDiff
-            sigRating := adjustedSignal power (in dBm) normalized to [0, 1] scale
-            chsum += ci * sigRating
-        innerInterf += chsum
+$ifaceScanData \gets scandata[interface]$\;
+$cumOuterInterf \gets 0$\;
 
-    Return outerInterf + innerInterf
-\end{lstlisting}
+\tcp{Calculate interference from outer APs}
+\ForEach{otherChannel, otherChannelSignals in ifaceScanData.OuterBSS}{
+    $channelInterfScore \gets ChannelInterference(otherChannel, interface.Channel, interface.ChannelWidth)$\;
+    $channelOuterInterf \gets 0$\;
+    \ForEach{signal in otherChannelSignals}{
+        $sigRating \gets$ signal.RxPower (in dBm) normalized to $[0, 1]$ scale\;
+        $channelOuterInterf \gets channelOuterInter + finterferenceScore \times sigRating$\;
+    }
+    $cumOuterInterf \gets cumOuterInterf + channelOuterInterf$\;
+}
+$cumInnerInterf \gets 0$\;
+\tcp{Calculate interference from inner APs}
+\ForEach{otherInterface, signalsFromOtherInterface in ifaceScanData.InnerBSS}{
+    $channelInterfScore \gets ChannelInterference(oth.Settings.Central, interfaceChannel, interfaceChannelWidth)$\;
+    \If{$channelInterfScore == 0$}{
+        continue\;
+    }
+    $channelOuterInterference \gets 0$\;
+    \ForEach{signal in signalsFromOtherInterface}{
+        $adjustedSourceSignal \gets signal + otherInterface.TxDiff$\;
+        $sigRating \gets adjustedSourceSignal$ power (in dBm) normalized to $[0, 1]$ scale\;
+        $channelOuterInterference \gets channelInterfScore \times sigRating$\;
+    }
+    $cumInnerInterf \gets cumInnerInterf + channelOuterInterf$\;
+}
+
+\Return $cumOuterInterf + cumInnerInterf$\;
+\end{algorithm}
 
 After the channel selection is completed, algorithm performs transmit power adjustment. The goal of this step is to reduce transmit power of the interface that experiences the most interference from other interfaces in the group.
 
 Check all interfaces $w_i \in G$.
-If $w_i$ interferes with currently considered interface $w, w \ne w_i$,
-\begin{lstlisting}[language={Pseudo}, caption=FromIfaceInterference() function., label=lst:interf_from_cpe]
-Function FromIfaceInterference(scandata, iface)
-    sum := 0.0
-    maxsignal := MinSignal
-    thisdata := scandata[iface]
+If $w_i$ interferes with currently considered interface $w, w \ne w_i$, all measurements of $w$ on $w_i$ are computed as a cumulative factor, and maximum RSSI of $w$ on some other interface $w_j$ is saved. Then, the \textit{worst interface}, i.e., the one causing the most interference on others, is chosen to reduce its transmit power nearly  in two, to the nearest defined power value. Then group interference is recalculated in an iterative way while there is an improvement.
+Algorithm \ref{rrm:fromifaceinterf} demonstrates pseudocode for this function.
+\newcommand{\rrmIface}{interface}
+\newcommand{\rrmScandata}{scandata}
 
-    For each otherIface in data
-        if otherIface == iface
-            Continue
-        // Get all measurements of signals from iface that otherIface received
-        thisIface := othCpe.InnerMeasurements[iface]
-        If thisIface == nil // no measurements for this interface from otherIface
-            Continue
-        ci := ChannelInterference(thisdata.Settings.Central, otherIface.Settings.Central, otherIface.Settings.Width)
-        If ci == 0 // channels are orthogonal
-            Continue
-        chsum := 0.0
-        For each sig in thisIface
-            signal := sig.Signal + thisdata.TxDiff
-            sigRating := signal power (in dBm) normalized to [0, 1] scale
-            chsum += ci * sigRating
-            maxsignal = max(signal, maxsignal)
-        sum += chsum
+\begin{algorithm}[H]
+\caption{FromIfaceInterference()}
+\label{rrm:fromifaceinterf}
+\DontPrintSemicolon
+\KwIn{
+    $groupState$: table containing state of \rrmG \newline
+    $interface$: interface to calculate interference from
+}
+\KwOut{
+    $cumInterfFromInterface$: cumulative interference quantity estimating how much $\rrmIface$ affects the RRM group \newline
+    $maxSignal$: maximum signal strength from $\rrmIface$ experienced by other AP}
 
-    Return sum, maxsignal
-\end{lstlisting}
+$cumInterfFromInterface \gets 0$\;
+$maxSignal \gets MinSignal$\;
+\ForEach{otherInterface in scandata}{
+    \If{otherInterface == interface}{
+        continue\;
+    }
+    \If{otherInterface has not received signals from $\rrmIface$}{
+        continue\;
+    }
+    $interfScore \gets ChannelInterference(\rrmIface.Channel, otherInterface.channel, otherInterface.channelWidth)$\;
+    \If{$interfScore == 0$}{
+        continue\;
+    }
+    $interfaceInterfSum \gets 0$\;
+    \ForEach{sig in thisIface}{
+        $adjustedSignalPower \gets \rrmIface.Signal + \rrmIface.TxDiff$\;
+        $maxsignal \gets \max(signal, maxsignal)$\;
+        $sigRating \gets$ adjustedSignalPower normalized to [0, 1]\;
+        $interfaceInterfSum \gets interfaceInterfSum + (interfScore \times sigRating)$\;
+    }
+    $cumInterfFromInterface \gets cumInterfFromInterface + interfaceInterfSum$\;
+}
+\Return $cumInterfFromInterface, maxsignal$\;
+\end{algorithm}
 
-\subsection{Evaluating asympotic complexity}
-\label{sec:complexity}
+\subsection{Evaluating asymptotic complexity of RRMGreedy}
+\label{chapter:research:sec:rrmgreedy:subsec:complexity}
 In this section, I evaluate asymptotic complexity of \textit{RRMGreedy} algorithm.
 First, I consider the complexity of used auxiliary functions:
 \begin{enumerate}
@@ -278,11 +307,29 @@ Next, I analyze time complexity of the main phases of the algorithm:
     \item \textbf{Final Data Assembly and Event Generation} has complexity $O(\card{G})$.
 \end{enumerate}
 
-\subsection{RRMGreedy flaws}
+\subsection{RRMGreedy: limitations and conclusions}
 \label{sec:flaws}
+
+Based on the analysis carried out above in this chapter, we can identify the following issues with the \textit{RRMGreedy} algorithm:
+\begin{itemize}
+    \item ChannelInterference(), calculating how much two channels interfere, only yields binary values 1 or 0. Due to the presence of cross-channel interference, the result should be continuous in range $[0; 1]$, not discrete;
+    \item Based on previous point, interference estimation is not accurate. It is based on signal power only, and interference is calculated only with a binary
+    % \item It is avoided, for example by hostapd automatic channel selection, to rely on pre-defined signal strength levels, since RSSI estimation can differ across different wireless cards. Instead, a minim
+    \item Noise floor should be included into the calculations, since it can drastically affect the choice of a channel;
+    % \item Two-stage adjustment, first channel, then transmit power, is arguably suboptimal. The 
+    \item Finally, selecting channel that minimizes the interference for an interface in a greedy way could not lead to the global optimum.
+    % \item TPC sums all historical record for TPC. Why, if the latest record is the most adequate one
+\end{itemize}
 
 \subsection{Evaluation on real-world data}
 \label{sec:eval}
+\section{RRMv2 design}
+\label{chap:research:sec:rrmv2}
 
-\subsection{Simulation}
-\label{sec:sim}
+As discussed in \ref{chap:lr:sec:rrm_approaches}, RRM algorithm, given the current state of network, that is, who can hear who and how strong, should decide on the channel and transmit power assignments for every AP, so that network capacity and throughput are maximized. For per-cell decisions, it is simple, and most of the kinds of the algorithm can fit into LCCS definition: scan each channel, get an estimate how good each channel is (using a certain metric, such as interference, number of APs operating on the same channel, etc.), and switch to the best one. On the other hand, a super-cell aims to make decisions improving the performance of the whole network. Usually this is achieved by using a cumulative metric across all cells, such as total interference, and trying to minimize it. Thus, a channel and (or) transmit power allocation that minimizes the cumulative metric should be chosen. As shown above, RRMGreedy selects channels to minimize interference at each AP, while there is an improvement cumulative metric.
+
+
+
+\section{Conclusion}
+\label{chap:research:sec:conclusion}
+TBD
