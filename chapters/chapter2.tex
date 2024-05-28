@@ -143,7 +143,7 @@ Key features of ARM include \cite{ARMOverview}:
 \begin{itemize}
 \item \textbf{Application Awareness}: Addressing the "dead time" caused by APs during channel scanning, ARM throttles the frequency of background scans based on current traffic load, reducing scans under heavy traffic and resuming normal scanning rates when traffic diminishes \cite{UnderstandingARM}.
 \item \textbf{Mode Awareness}: To mitigate interference in environments with densely installed APs, ARM can switch excessive APs to Air Monitor mode, where they continuously collect and send RRM telemetry to the controller.
-\item \textbf{Band Steering}: Encourages dual-band capable clients to prefer the 5GHz band to alleviate congestion on the 2.4GHz band.
+\item \textbf{Band Steering}: Promotes the use 5 GHz band to clients, instead of more congested and higher-range 2.4 GHz band.
 \item \textbf{802.11n HT Mode Support}: ARM can utilize a 40 MHz channel pair for 802.11n networks, selecting the best primary and secondary operating channels automatically.
 \item \textbf{Noise and Error Monitoring}: Distinguishes between 802.11 and non-802.11 noise sources, improving network reliability.
 \item \textbf{Spectrum Load Balancing}: Analyzes client distribution across neighboring APs to direct new connections to less burdened APs, though clients may reconnect to their original choice upon a subsequent attempt.
@@ -172,24 +172,28 @@ According to \cite{ArubaOSUserGuide}, AirMatch blacklists channel for channel se
 It is not clear if AirMatch uses the same metrics as ARM, but only ARM metrics are described in the documentation.
 To make RRM decisions, ARM uses two metrics:
 \begin{itemize}
-    \item \textbf{Coverage Index} - calculated a $\frac{x}{y}$, where $x$ is the AP's weighted calculation of SNR on all valid APs on a specified 802.11 channel, and $y$ is the weighted calculation of the AP's SNR the neighboring APs see on that channel.
-    \item \textbf{Interference Index} - metric to measure co-channel and adjacent-channel interference, calculated as a sum of four quantities $a$, $b$, $c$, $d$:
+    \item \textbf{Coverage Index} - comprises two components, $x$ and $y$:
     \begin{itemize}
-        \item $c$ is the channel interference the AP neighbors see on the selected channel.
+        \item $x$ is weighted calculation of Signal-to-Noise Ratio (SNR) for all APs on a given channel;
+        \item $y$ is the weighted sum of the SNRs that neighboring APs within the group observe on the same channel.
+    \end{itemize}
+    \item \textbf{Interference Index} - measures co-channel and adjacent-channel interference, calculated as a sum of four quantities $a$, $b$, $c$, $d$:
+    \begin{itemize}
+        \item $c$ is the channel interference the AP neighbors see on the selected channel;
         \item $d$ is the interference the AP neighbors see on the adjacent channel.
     \end{itemize}
 \end{itemize}
-Additionally, Aruba APs collect several other metrics, including L2 metrics:
+Additionally, Aruba APs collect several other metrics, including L2 metrics \cite{ArubaOSUserGuide}:
 
 \begin{itemize}
-    \item Amount of Retry frames (measured in \%)
-    \item Amount of Low-speed frames (measured in \%)
-    \item Amount of Non-unicast frames (measured in \%)
-    \item Amount of Fragmented frames (measured in \%)
-    \item Amount of Bandwidth seen on the channel (measured in kbps)
-    \item Amount of PHY errors seen on the channel (measured in \%)
-    \item Amount of MAC errors seen on the channel (measured in \%)
-    \item Noise floor value for the specified AP
+    \item Number of Retry frames, measured in \%
+    \item Number of Low-speed frames, measured in \%
+    \item Number of Non-unicast frames, measured in \%
+    \item Number of Fragmented frames, measured in \%
+    \item Number of Bandwidth seen on the channel, measured in kbps
+    \item Number of PHY errors seen on the channel measured in \%
+    \item Number of MAC errors seen on the channel measured in \%
+    \item Value of noise floor on the specified AP
 \end{itemize}
 
 Aruba documentation indicates that these metrics offer a "snapshot of the current RF health state" \cite{ARMMetrics}, suggesting they are informational tools for network administrators rather than being actively used in RRM decision-making.

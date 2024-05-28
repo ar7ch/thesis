@@ -1,52 +1,30 @@
-\chapter{Evaluation and Discussion}
+\chapter{Results and Discussion}
 \label{chap:eval}
-\begin{longtable}{c|c}
-\caption[This is the title I want to appear in the List of Tables]{Simulation Parameters} \label{table:fifsimulation_params} \\
-\hline
-A & B  \\
-\hline
-\endfirsthead
-\multicolumn{2}{@{}l}{} \\
-\hline
-A & B \\
-\hline
-\endhead
-\hline
- \textbf{Parameter} & \textbf{Value}\\
- \hline
- Number of vehicles & $|\mathcal{V}|$\\
- \hline
- Number of RSUs & $|\mathcal{U}|$\\
- \hline
- RSU coverage radius & 150 m\\
- \hline
- V2V communication radius & 30 m\\
- \hline
- Smart vehicle antenna height & 1.5 m\\
- \hline
- RSU antenna height & 25 m\\
- \hline
- Smart vehicle maximum speed & $v_{max}$ m/s\\
- \hline
- Smart vehicle minimum speed & $v_{min}$ m/s\\
- \hline
- Common smart vehicle cache capacities & $[50, 100, 150, 200, 250]$ mb\\
- \hline
- Common RSU cache capacities & $[5000,1000,1500,2000,2500]$ mb\\
- \hline
- Common backhaul rates & $[75, 100, 150]$ mb/s\\
- \hline
-\end{longtable}
 
-\begin{figure}[hbt]
-\centering
-\includegraphics[]{figs/inno.png}
-\caption{One kernel at $x_s$ (\emph{dotted kernel}) or two kernels at
-$x_i$ and $x_j$ (\textit{left and right}) lead to the same summed estimate
-at $x_s$. This shows a figure consisting of different types of
-lines. Elements of the figure described in the caption should be set in
-italics, in parentheses, as shown in this sample caption.}
-\label{fig:fifex}
-\end{figure}
+This chapter discusses the results of the study.
+Section \ref{chap:eval:sec:results} presents the results of the evaluation. Section \ref{chap:eval:sec:limitations} discusses the limitations of the study. Section \ref{chap:eval:sec:further_work} outlines the further work that can be done to improve the study. Finally, Section \ref{chap:eval:sec:conclusion} concludes the chapter.
 
-\ldots
+\section{Simulation Results}
+\label{chap:eval:sec:results}
+RRMv2 is shown to outperform both RRMGreedy and LCCS in terms of convergence rate, SINR, and throughput.
+TBD
+
+\section{Limitations}
+\label{chap:eval:sec:limitations}
+
+Using the simulated environment provides a controlled and reproducible environment for evaluation, however, networking and physical signal propagation models used pose their constraints. For example, \texttt{YansWifiPhy} propagation model does not consider cross-channel interference between adjacent channel, which can significantly impact channel planning, especially on 2.4 GHz band.
+
+\section{Further Work}
+\label{chap:eval:sec:further_work}
+As comes from the limitations (Section \ref{chap:eval:sec:limitations}), I can identify two directions for the next research:
+\begin{enumerate}
+    \item Improving the simulation model: the next steps would be to extend the simulation environment to consider more realistic scenarios. This includes employing cross-channel interference model SpectrumWifiPhy, considering the impact of hidden nodes, and introducing a wireless LAN controller (WLC) as a part of the simulated network, since current implementation works "above" the nodes, being a part of the script logic;
+    \item Implementing the RRMv2 algorithm in a real-world testbed: since the algorithm is designed with respect to constraints described in Section \ref{chap:lr:sec:conclusion}, metrics required for its operation can be obtained from the majority of OpenWRT-based Wi-Fi access points available on the market.
+\end{enumerate}
+
+\section{Conclusion}
+\label{chap:eval:sec:conclusion}
+In this thesis, I have derived a new super-cell Radio Resource Management (RRM) algorithm, RRMv2, and implemented it using ns-3 network simulator.
+To be able to complete this, I performed analysis of another super-cell RRM algorithm, RRMGreedy, and identified its flaws. I have also implemented a local per-cell RRM algorithm, Least Congested Channel Search (LCCS), as a baseline for comparison.
+Moreover, since ns-3 does not provide facilities for implementing RRM algorithms out of the box, and since Wi-Fi station channel switching logic was not implemented as of current ns-3 release, I have introduced a completely new RRM module for ns-3 and a set of amendments into the existing codebase.
+Finally, the algorithms were using diverse simulation settings with various network topologies and traffic patterns. The results of the simulation show that RRMv2 outperforms both RRMGreedy and LCCS in terms of convergence rate, SINR, and throughput.

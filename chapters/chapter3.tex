@@ -81,10 +81,9 @@ On a high level, the algorithm consists of two main steps --- \textbf{Channel Se
 \BlankLine
 groupState $\gets$ PreprocessRRMData($\boldsymbol{G}$, scandata)\;
 \BlankLine
-\tcp{Step 1: Set Maximum Transmission Power}
+\tcp{Step 1: Start with max Tx power for each interface}
 \For{each interface in $\boldsymbol{G}$}{
-    $P_i \gets$ Max Tx power for given interface\;
-    groupState[interface].TxDiff $\gets (P_i - interface.TxPower)$\;
+    groupState[interface].TxDiff $\gets (interface.MaxTxPower - interface.TxPower)$\;
 }
 \BlankLine
 \tcp{Step 2: Greedy Channel Search}
@@ -98,16 +97,16 @@ groupInterference $\gets$ GroupInterference(groupState)\;
     groupInterference $\gets$ GroupInterference(scandata)\;
 }
 \BlankLine
-\tcp{Step 3: Adjust Transmission Power (if enabled)}
+\tcp{Step 3: Greedy Transmission Power Adjustment (if enabled)}
 \Repeat{no improvement in groupInterference}{
-    \tcp{Identify the "worst interface" $interface_{worst}$ --- the one causing the most interference for other APs}
-    $interface_{worst}$ $\gets \argmax_{w_i \in G} FromIfaceInterference(groupState, w_i)$\;
-    newTxPower $\gets \frac{1}{2}(interface_{worst}.TxPower + minTxPower)$ \;
-    groupState[$interface_{worst}$].TxPower $\gets$ newTxPower\;
+    \tcp{Identify the "worst interface" $interface_{worst}$ causing the greatest interference for other APs and the maximum RSSI of $interface_{worst}$ on some other interface}
+    $interface_{worst},\;RSSI_{worst}$ $\gets \argmax_{w_i \in G} FromIfaceInterference(groupState, w_i)$\;
+    \tcp{$RSSI_{min}$ is a predefined threshold for the minimum RSSI, by default set to -100 (dBm)}
+    $groupState[interface_{worst}].TxDiff \gets \frac{RSSI_{min} - RSSI_{worst}}{2}$ \;
     groupInterference $\gets$ GroupInterference(scandata)\;
 }
 \BlankLine
-\tcp{Step 4: Send configuration changes to AP}
+\tcp{Step 4: Send configuration changes to APs}
 $\boldsymbol{resultConfig} \gets$ getUpdatedConfiguration(groupState)\;
 \Return{$\boldsymbol{resultConfig}$}\;
 \end{algorithm}
@@ -142,43 +141,65 @@ The result of PreprocessRRMData is saved in a table called \textit{groupState}. 
 
 
 % Algorithm \ref{lst:interf_on_cpe} is a pseudocode for 
-Function \textit{OnIfaceInterference(groupState, interface, channel)} calculates interference experienced by given access point (and thus by its wireless interface) from outer and inner signals.
-Essentially, it breaks down to calculating:
+Function \textit{OnIfaceInterference(groupState, interface, channel)} (Algorithm \ref{lst:channel_interf}) calculates interference experienced by given access point (and thus by its wireless interface) from outer and inner signals.
+Essentially, it breaks down to calculating interference as a sum of outer and inner interference scores for a given interface $w_i$ on a given channel $c_i$:
+% where:
+% \begin{itemize}
+%     \item $S^{outer}_i$ is a set of signals sensed by $w_i$ on from stations not in $G$;
+%     \item $S^{inner}_i$ is a set of signals sensed by $w_i$ from stations in $G$, $s^j_i$ is $j$-th signal in $S^{outer}_i$ or $S^{inner}_i$
+%     \item $scale(x)$ is a min-max normalization function that normalizes $x$ to [0, 1] scale with given $maxSignal$ and $minSignal$:
+%         \begin{equation} scale(x) = \frac{x - minSignal}{maxSignal - minSignal} \end{equation}
+%     \item $w_i.TxDiff$ is a transmit power adjustment for $w_i$;
+% \end{itemize}
+\newenvironment{conditions}
+  {\par\vspace{\abovedisplayskip}\noindent\begin{tabular}{>{$}l<{$} @{${}={}$} l}}
+  {\end{tabular}\par\vspace{\belowdisplayskip}}
 \begin{equation}
     interf_i = OnIfaceInterference(w_i, channel) = interf^{outer}_i + interf^{inner}_i
 \end{equation}
 \begin{equation}
-    interf^{outer}_i = \sum_{j=0}^{\lvert S^{outer}_i \rvert} ChannelInterference(w_i, s^{j}_i) \cdot scale(s^j_i)
+    interf^{outer}_i = \sum_{j=0}^{\lvert S^{outer}_i \rvert} ChannelInterference(channel, s^{j}_i.channel) \cdot scale(s^j_i)
 \end{equation}
 \begin{equation}
-    interf^{inner}_i = \sum_{j=0}^{\lvert S^{inner}_i \rvert} ChannelInterference(w_i, s^{j}_i) \cdot scale(s^j_i + w_i.TxDiff)
+    interf^{inner}_i = \sum_{j=0}^{\lvert S^{inner}_i \rvert} ChannelInterference(channel, s^{j}_i.channel) \cdot scale(s^j_i + w_i.TxDiff)
 \end{equation}
 where:
-\begin{itemize}
-    \item $S^{outer}_i$ is a set of signals sensed by $w_i$ on from stations not in $G$
-    \item $S^{inner}_i$ is a set of signals sensed by $w_i$ from stations in $G$, $s^j_i$ is $j$-th signal in $S^{outer}_i$ or $S^{inner}_i$
-    \item $scale(x)$ is a min-max normalization function that normalizes $x$ to [0, 1] scale with given $maxSignal$ and $minSignal$:
-        \begin{equation} scale(x) = \frac{x - minSignal}{maxSignal - minSignal} \end{equation}
-    \item $w_i.TxDiff$ is a transmit power adjustment for $w_i$
-\end{itemize}
-In other words, the algorithm is as follows:
+\begin{conditions}
+    S^{outer}_i & set of signals sensed by $w$ on from APs $\notin G$; \\
+    S^{inner}_i & set of signals sensed by $w_i$ from APs $\in G$; \\
+    s^j_i       & $j$-th signal received by $w_i$, in $S^{outer}_i$ or $S^{inner}_i$; \\
+    w_i.TxDiff  & transmit power adjustment for $w_i$; \\
+    ChannelInterference(ch_1, ch_2)    & interference between $ch_1$ and $ch_2$; \\
+    scale(x)    & normalization function. \\
+\end{conditions}
 
-\begin{enumerate}
-    \item \textbf{Calculate outer interference}: as defined earlier in this chapter, \textbf{outer interference} is interference originating from access points not in the RRM group $G$.
-    Based on earlier measurements sent by $w_i$, for each sensed signal $s \in S_i = S^{inner}_i \cap S^{outer}_i$, calculate adjacent-channel/co-channel interference score with \textit{ChannelInterference()}. This function, given current interface channel, its channel width, and some other channel, returns an estimation of interference between these channels using a simple heuristic (Listing \ref{lst:channel_interf}). Then, for each signal on a given channel, calculate interference score as a product of \textit{ChannelInterference()} and signal power normalized to [0, 1] scale; finally, sum up interference scores for all signals on this channel:
-    \begin{equation}
-        interf^{outer}_i = \sum_{j=0}^{\lvert S^{outer}_i \rvert} ChannelInterference(w_i, s^j_i) \cdot \frac{signal^j_i - minSignal}{maxSignal - minSignal}
-    \end{equation}
-    where $S^{outer}_i$ is a set of signals sensed by $w_i$ on channels not in $\mathbf{G}$, $s^j_i$ is $j$-th signal in $S^{outer}_i$, $signal^j_i$ is power of $s^j_i$ normalized to [0, 1] scale, and $maxSignal$ is the maximum signal power in $S^{outer}_i$.
-    \item \textbf{Calculate inner interference}: as defined earlier in this chapter, \textbf{inner interference} is interference originating from access points in the RRM group $G$. In the same way as for outer interference, calculate interference score for each signal on given channel as a product of \textit{ChannelInterference()} and signal power normalized to [0, 1] scale. One difference is that TxDiff is taken into account for Tx power adjustment; finally, sum up interference scores for all signals on this channel:
-    \begin{equation}
-        interf^{inner}_i = \sum_{j=0}^{\lvert S^{inner}_i \rvert} ChannelInterference(w_i, s^j_i) \cdot \frac{signal^j_i + w_i.TxDiff}{maxSignal}
-    \end{equation}
-    where $S^{inner}_i$ is a set of signals sensed by $w_i$ on channels in $G$, $s^j_i$ is $j$-th signal in $S^{inner}_i$, $signal^j_i$ is power of $s^j_i$ normalized to [0, 1] scale, and $maxSignal$ is the maximum signal power in $S^{inner}_i$.
-\end{enumerate}
+Transmit power is normalized to $[0,1]$ with min-max normalization using pre-defined RSSI (Received Signal Strength) thresholds $RSSI_{min}$ and $RSSI_{max}$ (\ref{eq:scale}):
+\begin{equation}
+    \label{eq:scale}
+    scale(x) = \frac{x - RSSI_{min}}{RSSI_{max} - RSSI_{min}}
+\end{equation}
+
+Interference between channels is estimated with \textit{ChannelInterference()} function(Algorithm \ref{lst:channel_interf}). It is assumed that the distance between orthogonal channels is 5 MHz. Thus, given a 2.4 GHz band and 20 MHz width, the distance between two channels should be at least 5. The interval of length $n$ should have $n-1$ channels in between, which is the reason for the $add$ factor.
+
+
+% In other words, the algorithm is as follows:
+
+% \begin{enumerate}
+%     \item \textbf{Calculate outer interference}: as defined earlier in this chapter, \textbf{outer interference} is interference originating from access points not in the RRM group $G$.
+%     Based on earlier measurements sent by $w_i$, for each sensed signal $s \in S_i = S^{inner}_i \cap S^{outer}_i$, calculate adjacent-channel/co-channel interference score with \textit{ChannelInterference()}. This function, given current interface channel, its channel width, and some other channel, returns an estimation of interference between these channels using a simple heuristic (Listing \ref{lst:channel_interf}). Then, for each signal on a given channel, calculate interference score as a product of \textit{ChannelInterference()} and signal power normalized to [0, 1] scale; finally, sum up interference scores for all signals on this channel:
+%     \begin{equation}
+%         interf^{outer}_i = \sum_{j=0}^{\lvert S^{outer}_i \rvert} ChannelInterference(w_i, s^j_i) \cdot \frac{signal^j_i - minSignal}{maxSignal - minSignal}
+%     \end{equation}
+%     where $S^{outer}_i$ is a set of signals sensed by $w_i$ on channels not in $\mathbf{G}$, $s^j_i$ is $j$-th signal in $S^{outer}_i$, $signal^j_i$ is power of $s^j_i$ normalized to [0, 1] scale, and $maxSignal$ is the maximum signal power in $S^{outer}_i$.
+%     \item \textbf{Calculate inner interference}: as defined earlier in this chapter, \textbf{inner interference} is interference originating from access points in the RRM group $G$. In the same way as for outer interference, calculate interference score for each signal on given channel as a product of \textit{ChannelInterference()} and signal power normalized to [0, 1] scale. One difference is that TxDiff is taken into account for Tx power adjustment; finally, sum up interference scores for all signals on this channel:
+%     \begin{equation}
+%         interf^{inner}_i = \sum_{j=0}^{\lvert S^{inner}_i \rvert} ChannelInterference(w_i, s^j_i) \cdot \frac{signal^j_i + w_i.TxDiff}{maxSignal}
+%     \end{equation}
+%     where $S^{inner}_i$ is a set of signals sensed by $w_i$ on channels in $G$, $s^j_i$ is $j$-th signal in $S^{inner}_i$, $signal^j_i$ is power of $s^j_i$ normalized to [0, 1] scale, and $maxSignal$ is the maximum signal power in $S^{inner}_i$.
+% \end{enumerate}
 
 \begin{algorithm}[H]
-\caption{ChannelInterference()}
+\caption{ChannelInterference}
 \label{lst:channel_interf}
 \DontPrintSemicolon % Don't print semicolons at the end of each line
 \SetKwFunction{FMain}{ChannelInterference}
@@ -196,10 +217,9 @@ In other words, the algorithm is as follows:
 }
 \end{algorithm}
 
-In \textit{ChannelInterference()}, it is assumed that the distance between orthogonal channels is 5 MHz. Thus, given a 2.4 GHz band and 20 MHz width, the distance between two channels should be at least 5. The interval of length $n$ should have $n-1$ channels in between, which is the reason for the $add$ factor.
-
 \begin{algorithm}[H]
-\caption{OnIfaceInterference()}
+\label{lst:onifaceinterf}
+\caption{OnIfaceInterference}
 \DontPrintSemicolon
 \KwIn{
     $groupState$: table containing state of \rrmG \newline
@@ -240,11 +260,17 @@ $cumInnerInterf \gets 0$\;
 \Return $cumOuterInterf + cumInnerInterf$\;
 \end{algorithm}
 
-After the channel selection is completed, algorithm performs transmit power adjustment. The goal of this step is to reduce transmit power of the interface that experiences the most interference from other interfaces in the group.
+% \subsection{Transmit Power Control}
 
-Check all interfaces $w_i \in G$.
-If $w_i$ interferes with currently considered interface $w, w \ne w_i$, all measurements of $w$ on $w_i$ are computed as a cumulative factor, and maximum RSSI of $w$ on some other interface $w_j$ is saved. Then, the \textit{worst interface}, i.e., the one causing the most interference on others, is chosen to reduce its transmit power nearly  in two, to the nearest defined power value. Then group interference is recalculated in an iterative way while there is an improvement.
-Algorithm \ref{rrm:fromifaceinterf} demonstrates pseudocode for this function.
+Function \texttt{FromIfaceInterference} (Algorithm \ref{rrm:fromifaceinterf}) calculates the amount of interference originating from $w_i$ and experienced by other interfaces in the group \rrmG. The function returns two values: cumulative interference quantity estimating how much $w_i$ affects the RRM group, and maximum RSSI of $w_i$ on some other interface $w_j$. Using \texttt{FromIfaceInterference()}, RRMGreedy finds the \textit{worst interference} and gradually reduces its transmit power to improve the group interference score.
+
+% The RRMGreedy TPC works as follows:
+% \begin{enumerate}
+%     \item check all interfaces $w_i \in G$.
+%     \item if $w_i$ interferes with currently considered interface $w, w \ne w_i$, all measurements of $w$ on $w_i$ are computed as a cumulative factor, and maximum RSSI of $w$ on some other interface $w_j$ is saved.
+%     \item Then, find the \textit{worst interface}, i.e., the one causing the most interference on others. To reduce Worst interface's transmit power should is reduced nearly in two, to the nearest defined power value, . Then group interference is recalculated in an iterative way while there is an improvement.
+% \end{enumerate}
+% Algorithm \ref{rrm:fromifaceinterf} demonstrates pseudocode for this function.
 \newcommand{\rrmIface}{interface}
 \newcommand{\rrmScandata}{scandata}
 
@@ -312,20 +338,24 @@ Next, I analyze time complexity of the main phases of the algorithm:
 
 Based on the analysis carried out above in this chapter, we can identify the following issues with the \textit{RRMGreedy} algorithm:
 \begin{itemize}
-    \item ChannelInterference(), calculating how much two channels interfere, only yields binary values 1 or 0. Due to the presence of cross-channel interference, the result should be continuous in range $[0; 1]$, not discrete;
-    \item Based on previous point, interference estimation is not accurate. It is based on signal power only, and interference is calculated only with a binary
-    % \item It is avoided, for example by hostapd automatic channel selection, to rely on pre-defined signal strength levels, since RSSI estimation can differ across different wireless cards. Instead, a minim
-    \item Noise floor should be included into the calculations, since it can drastically affect the choice of a channel;
-    % \item Two-stage adjustment, first channel, then transmit power, is arguably suboptimal. The 
+    \item \textit{ChannelInterference()}, calculating how much two channels interfere, only yields binary values 1 or 0. Due to the presence of cross-channel interference, the result of \textit{ChannelInterference()} should be continuous in range $[0; 1]$, not discrete;
+    % \item Following on the previous point, interference estimation is not accurate. It is based on signal power only.
+    \item Noise floor should be included into the interference metric, since it can drastically affect the performance on the channel;
+    \item Channel utilization is not taken into account. Consider the case when 3 APs with no associated stations operate on channel $A$, and 1 AP with 10 associated stations operates on channel $B$. The algorithm does not keep track of the number of stations or other channel utilization data, and will favor $B$, even though $A$ is less utilized, since the only traffic APs on $A$ are likely to produce is rare and periodic beacon frames;
+    \item Assuming maximum transmit power for each in-group AP in the Step 1 of Algorithm \ref{alg:greedyRRM} is not reasonable, since it tends to exaggerate the interference scores and thus lead to unnecessary channel switches;
+    \item When calculating the interference score, if there are several signals from the same APs, they will be summed as they were different APs, again leading to exaggerated interference scores;
+    \item Even if next iteration yields worse interference score, there is no rollback to the previous, better state;
+    \item Change with no improvements will be staged anyway, so disruptive channel switch will occur even if it is not necessary;
     \item Finally, selecting channel that minimizes the interference for an interface in a greedy way could not lead to the global optimum.
     % \item TPC sums all historical record for TPC. Why, if the latest record is the most adequate one
 \end{itemize}
 
-\subsection{Evaluation on real-world data}
-\label{sec:eval}
+% \subsection{Evaluation on real-world data}
+% \label{sec:eval}
 \section{RRMv2 design}
 \label{chap:research:sec:rrmv2}
 
+\section{Design considerations}
 As discussed in \ref{chap:lr:sec:rrm_approaches}, RRM algorithm, given the current state of network, that is, who can hear who and how strong, should decide on the channel and transmit power assignments for every AP, so that network capacity and throughput are maximized. For per-cell decisions, it is simple, and most of the kinds of the algorithm can fit into LCCS definition: scan each channel, get an estimate how good each channel is (using a certain metric, such as interference, number of APs operating on the same channel, etc.), and switch to the best one. On the other hand, a super-cell aims to make decisions improving the performance of the whole network. Usually this is achieved by using a cumulative metric across all cells, such as total interference, and trying to minimize it. Thus, a channel and (or) transmit power allocation that minimizes the cumulative metric should be chosen. As shown above, RRMGreedy selects channels to minimize interference at each AP, while there is an improvement cumulative metric.
 
 
