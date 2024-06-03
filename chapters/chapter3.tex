@@ -151,9 +151,17 @@ Essentially, it breaks down to calculating interference as a sum of outer and in
 %         \begin{equation} scale(x) = \frac{x - minSignal}{maxSignal - minSignal} \end{equation}
 %     \item $w_i.TxDiff$ is a transmit power adjustment for $w_i$;
 % \end{itemize}
+\newenvironment{conditions*}
+  {\par\vspace{\abovedisplayskip}\noindent
+   \tabularx{\columnwidth}{>{$}l<{$} @{}>{${}}c<{{}$}@{} >{\raggedright\arraybackslash}X}}
+  {\endtabularx\par\vspace{\belowdisplayskip}}
+
+
 \newenvironment{conditions}
-  {\par\vspace{\abovedisplayskip}\noindent\begin{tabular}{>{$}l<{$} @{${}={}$} l}}
+  {\par\vspace{\abovedisplayskip}\noindent
+   \begin{tabular}{>{$}l<{$} @{} >{${}}c<{{}$} @{} l}}
   {\end{tabular}\par\vspace{\belowdisplayskip}}
+
 \begin{equation}
     interf_i = OnIfaceInterference(w_i, channel) = interf^{outer}_i + interf^{inner}_i
 \end{equation}
@@ -164,14 +172,14 @@ Essentially, it breaks down to calculating interference as a sum of outer and in
     interf^{inner}_i = \sum_{j=0}^{\lvert S^{inner}_i \rvert} ChannelInterference(channel, s^{j}_i.channel) \cdot scale(s^j_i + w_i.TxDiff)
 \end{equation}
 where:
-\begin{conditions}
-    S^{outer}_i & set of signals sensed by $w$ on from APs $\notin G$; \\
-    S^{inner}_i & set of signals sensed by $w_i$ from APs $\in G$; \\
-    s^j_i       & $j$-th signal received by $w_i$, in $S^{outer}_i$ or $S^{inner}_i$; \\
-    w_i.TxDiff  & transmit power adjustment for $w_i$; \\
-    ChannelInterference(ch_1, ch_2)    & interference between $ch_1$ and $ch_2$; \\
-    scale(x)    & normalization function. \\
-\end{conditions}
+\begin{conditions*}
+    S^{outer}_i &  & set of signals sensed by $w$ on from APs $\notin G$; \\
+    S^{inner}_i &  & set of signals sensed by $w_i$ from APs $\in G$; \\
+    s^j_i       &  & $j$-th signal received by $w_i$, in $S^{outer}_i$ or $S^{inner}_i$; \\
+    w_i.TxDiff  &  & transmit power adjustment for $w_i$; \\
+    ChannelInterference(ch_1, ch_2)  & \; \; & interference between $ch_1$ and $ch_2$ \linebreak (Algorithm \ref{lst:channel_interf}); \\
+    scale(x)    &  & normalization function \ref{eq:scale}. \\
+\end{conditions*}
 
 Transmit power is normalized to $[0,1]$ with min-max normalization using pre-defined RSSI (Received Signal Strength) thresholds $RSSI_{min}$ and $RSSI_{max}$ (\ref{eq:scale}):
 \begin{equation}
@@ -262,7 +270,7 @@ $cumInnerInterf \gets 0$\;
 
 % \subsection{Transmit Power Control}
 
-Function \texttt{FromIfaceInterference} (Algorithm \ref{rrm:fromifaceinterf}) calculates the amount of interference originating from $w_i$ and experienced by other interfaces in the group \rrmG. The function returns two values: cumulative interference quantity estimating how much $w_i$ affects the RRM group, and maximum RSSI of $w_i$ on some other interface $w_j$. Using \texttt{FromIfaceInterference()}, RRMGreedy finds the \textit{worst interference} and gradually reduces its transmit power to improve the group interference score.
+Function \textit{FromIfaceInterference()} (Algorithm \ref{rrm:fromifaceinterf}) calculates the amount of interference originating from $w_i$ and experienced by other interfaces in the group \rrmG. The function returns two values: cumulative interference quantity estimating how much $w_i$ affects the RRM group, and maximum RSSI of $w_i$ on some other interface $w_j$. Using \textit{FromIfaceInterference()}, RRMGreedy finds the \textit{worst interference} and gradually reduces its transmit power to improve the group interference score.
 
 % The RRMGreedy TPC works as follows:
 % \begin{enumerate}

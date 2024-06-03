@@ -3,6 +3,7 @@
 \chaptermark{}
 The purpose of this chapter is to explore existing approaches on Radio Resource Management (RRM) in IEEE 802.11 networks, including surveying what is proposed as a part of the 802.11 standard itself, what research has been done and what is offered by existing commercial solutions. This chapter is organized as follows:
 \begin{itemize}
+    \item Section \ref{chap:lr:sec:80211_overview} briefly review the fundamentals of Radio Frequency (RF) communications, and IEEE 802.11 standard for wireless LAN;
     \item Section \ref{chap:lr:sec:rrm_80211} provides an overview how radio resource management is facilitated within the IEEE 802.11 standard;
     \item Section \ref{chap:lr:sec:prev_works} provides a synthesis on previous research in radio resource management;
     \item Section \ref{chap:lr:sec:prop_rrm} provides an overview of proprietary RRM solutions from major vendors;
@@ -10,9 +11,75 @@ The purpose of this chapter is to explore existing approaches on Radio Resource 
 \end{itemize}
 Table \ref{defs_table} contains the list of definitions used in this chapter.
 
+\section{Overview of IEEE 802.11 standard}
+\label{chap:lr:sec:80211_overview}
+
+Throughout this Thesis, I refer to domain-specific terms, whose definitions are given in Table \ref{defs_table}. Below in this chapter, I briefly review IEEE 802.11 standard and highlight the aspects most relevant for this study.
+
+
+\subsection{Transmission medium}
+
+The primary medium for communications in IEEE 802.11 are electromagnetic (EM) radio-frequency (RF) waves operating within the microwave range \cite{colemanCWNACertifiedWireless2021}.
+
+\subsection{Frequency band}
+Main frequency bands are: 2.4 GHz band introduced by 802.11b, 5 GHz band introduced by 802.11a and 6 GHz, introduced by 802.11ax. This study focuses on first two bands as used the most frequently. Below I describe those bands in more details.
+
+Most of the 802.11 amendments, including b,g,n, and partially ax, operate at unlicensed 2.4 GHz ISM (Industrial, Scientific, Medical) RF band \cite{tanenbaumComputerNetworks2020, colemanCWNACertifiedWireless2021}. Using an unlicensed frequency band, however, introduces multiple challenges: the radio spectrum becomes congested with non-802.11 sources, such as microwave ovens, Bluetooth Personal Area Networks (PAN), cordless phones etc. \cite{tanenbaumComputerNetworks2020, colemanCWNACertifiedWireless2021}. Moreover, 2.4 GHz signals can propagate through solid obstructions like walls, doors, and windows better than signals operating on higher-frequency ones \cite{colemanCWNACertifiedWireless2021}. This property can provide better coverage and signal quality for clients, although can cause interference for neighboring WLANs, which will in turn lead to degradation of signal quality.
+
+The 2.4 GHz ISM band is split into 14 channels. Depending on local regulations, number of possible channels can vary, but in general channels 1-11 are available at every region. Assuming 20 MHz channel width, each channel is characterized by its \textit{center frequency}, $\pm$ 10 MHz, with 5 MHz width between two adjacent centers, i.e, the channels \textit{overlap}. Channel 1 has central frequency 2.412 GHz, Channel 14 — 2.484 GHz. Thus, for channels to be non-overlapping, they must have at least 5 channels or 25 MHz in between. Such non-overlapping channels are 1, 6, 11, with central frequencies 2.412, 2.437, and 2.462 MHz, respectively.
+
+The 5 GHz U-NII (Unlicensed National Information Infrastructure) series of bands is used by 802.11a/802.11ac/802.11ax amendments. Unlike the 2.4 GHz band, channels do not overlap. On the end of each band \textit{guard band} as an additional measure to avoid interference. Combined, bands U-NII-1, U-NII-1, U-NII-2A, U-NII-2C, U-NII-3 provide twenty-five 20 MHz or twelve 40 MHz non-overlapping channels \cite{colemanCWNACertifiedWireless2021}. However, some channels may not be available in different regions, since this band can also be used by military and weather radars. The first channel from U-NII-1 band has number 36.
+
+
+\subsection{Signal quality and its metrics}
+
+Thus, the presence of physical obstructions, background noise and interference from other access points urges us to explore possible measurements and metrics for a wireless signal quality. Below, I briefly describe the most widely used quantities:
+
+A measure widely used in RF engineering and employed by Wi-Fi vendors is \textbf{Signal-to-Noise Ratio (SNR)}, which is defined as a ratio between the received signal power and the power of background noise:
+\begin{equation}
+    \label{formula:snr}
+    SNR = \frac{P_{signal}}{P_{noise}}
+\end{equation}
+    Since SNR is essentially a difference in power, which is measured in Watts, in practice it is measured in a relative unit on a logarithmic scale called \textbf{decibel (dB)} [1,2]:
+
+\begin{equation}
+    \label{formula:snr_db}
+    {SNR}_{dB} = 10\log_{10}\frac{P_{signal}}{P_{noise}}
+\end{equation}
+
+In recent years, \textbf{Signal-to-Interference-Plus-Noise ratio (SINR)} measurement have become a more widespread measurement of wireless networks\' signal quality. Similarly, it is defined as:
+
+\begin{equation}
+    \label{formula:sinr}
+    SINR = \frac{P_{signal}}{P_{noise} + P_{interf}}
+\end{equation}
+
+    where $P_{signal}$ is the power of the signal of interest, and $P_{interf}$ is the power of interfering signals.
+    By considering interference from other 802.11 devices, which is typically a dynamic quantity that changes rapidly over time unlike background noise, SINR describes EM spectrum situation more accurately.
+
+Received Signal Strength Indicator (RSSI) relative measure of signal strength in range from 0 to 255, where 0 is the weakest signal a receiver is able to sense. The exact correspondence between RSSI and received signal power is implementation-specific and is left on behalf of hardware manufacturers \cite{colemanCWNACertifiedWireless2021}.
+
+\subsection{Radio Resource Management}
+\label{chap:intro:sec:rrm}
+The scarcity of available frequency bands in the time of growing demand for wireless connectivity has led to the development of methods called \textit{spectrum management} or \textit{radio resource management (RRM)}. Most of research on RRM is focused on cellular networks, where coverage area of base stations spans across multiple kilometers, and the number of clients for one station can reach several thousands, so proper spectrum management is vital for operation of cells. However, from the physical layer perspective, the radio situation in 802.11 networks is similar. As described in \cite{zanderRadioResourceManagement1997}, given a wireless network with a set of access points $\boldsymbol{B}$, which can communicate over a set of channels $\boldsymbol{C}$, with a maximum transmit power of $P_{max}$, establishing a radio link between a client device and an access point requires from the wireless infrastructure to assign:
+\begin{enumerate}
+    \item An access point $b \in \boldsymbol{B}$;
+    \item A frequency channel $c \in \boldsymbol{C}$;
+    \item A transmission power level $ p \leq P_{max}$.
+\end{enumerate}
+Obviously, channel and transmission power are \textit{global} for a given access point in a sense that all its other clients will have to adjust their parameters correspondingly: switch the operating channel and deal with the new received signal strength from their AP.
+In Wi-Fi, the first requirement is usually managed by the client itself: user chooses SSID they wish to use, and in case if multiple APs serve the same SSID, a client device associates with AP having the strongest signal available. Later, a client can switch to another access point within the same extended service set via \textit{roaming} methods, such as \textit{Fast Basic Service Set (BSS) Transition} defined in 802.11r \cite{80211r2008IEEE}. The roaming decision is ultimately made by a client device, which sends a reassociation request to start the roaming process \cite{colemanCWNACertifiedWireless2021}. The access point, however, can force a client to find another access point by sending a deauthentication frame, or moving to another channel without notifying.
+The second and third requirements are a part of current AP configuration and a subject to change. A client discovers current operating channel of APs by tuning on each available channel in a succession, while transmission power only can be estimated by measuring received signal strength.
+Thus, \textbf{the goal of a radio resource allocation algorithm is to optimize spectrum usage within a WLAN via assigning an operating channel and a transmission power level to each access point in a way that maximizes the overall network performance.}
+
+As it will be shown in Section \ref{chap:lr:sec:rrm_80211}, the 802.11 standard does not provide any algorithms for channel and transmission power assignment, however, some amendments introduce methods for measurement, signaling and radio adjustment that can be used for RRM purposes.
+
+Note that related researches and commercial solutions introduce many similar terms for the same procedure of channel change that can use different algorithms and slightly vary according to specifics of their application: \textit{Frequency Selection}, \textit{Frequency Planning}, \textit{Channel Selection}, \textit{Channel Planning}, \textit{Channel Assignment}, etc. Adjustment of transmission power is usually
+In this study, we use those terms interchangeably.
+
 \section {Radio Resource Management in IEEE 802.11}
 \label{chap:lr:sec:rrm_80211}
-As discussed in Section \ref{chap:intro:sec:rrm}, a radio resource allocation algorithm aims to optimize network capacity through optimizing spectrum usage by adjusting two parameters: frequency and transmission power of each access point. The very need for an RRM algorithm comes from situation called \textit{Overlapping Basic Service Sets} in the IEEE 802.11 standard, when there are two basic service sets operating on the same channel within reach of each other. This situation leads to co-channel interference, which degrades network performance. In this section, I provide an overview of methods and techniques provided by IEEE 802.11 standard that can assist in radio resource management.
+As described in Section \ref{chap:intro:sec:rrm}, a radio resource management algorithm aims to optimize network capacity through optimizing spectrum usage by adjusting two parameters: frequency and transmission power of each access point. The very need for an RRM algorithm comes from situation called \textit{Overlapping Basic Service Sets} in the IEEE 802.11 standard, when there are two basic service sets operating on the same channel within reach of each other. This situation leads to co-channel interference, which degrades network performance. In this section, I provide an overview of methods and techniques provided by IEEE 802.11 standard that can assist in radio resource management.
 
 
 \subsection {IEEE 802.11h}
@@ -46,7 +113,7 @@ In this light, attempts to improve spectrum management via channel assignment an
 
 \subsection {Radio Resource Management Approaches}
 \label{chap:lr:sec:rrm_approaches}
-As RRM is a broad topic which does not imply a single methodology or approach, classification of RRM algorithms is a challenging task. Most of the papers with the "Radio Resource Management" keyword are focused on problems of cellular networks, such as LTE or 5G. At the same time, the problem formalization, some optimization objective and algorithms can also be used for research in 802.11 networks, but band usage, client management, deployment and operation specifics make most of the proposals inapplicable for 802.11 networks.
+Since RRM is a broad topic which does not imply a single methodology, approach, or even a definition, classification of RRM algorithms is a challenging task. Most of the papers with the "Radio Resource Management" keyword are focused on problems of cellular networks, such as LTE or 5G. At the same time, the problem formalization, some optimization objective and algorithms can also be used for research in 802.11 networks, but band usage, client management, deployment and operation specifics make most of the proposals inapplicable for 802.11 networks.
 To the best of my knowledge, no comprehensive survey on RRM in 802.11 WLAN exist. I will refer to \cite{bouhafsPerFlowRadioResource2020}, which provides detailed overview of previous research, and \cite{leeDeepLearningAidedChannel2023}, describing state-of-the-art on RRM.
 In \cite{bouhafsPerFlowRadioResource2020}, authors classify RRM algorithms into three categories:
 \begin{itemize}
@@ -63,7 +130,7 @@ As analyzed in \cite{aruneshmishraWeightedColoringBased2005}, LCCS has several l
     \item LCCS also falls short in optimizing channel reuse based on the distribution of clients. It fails to account for the interference experienced by clients, thus missing the opportunity for channel reuse strategies based on client locations and densities.
 \end{enumerate}
 
-In general, uncoordinated decision-making like LCCS tends to yield suboptimal results. Consider an extreme case, where a number of APs can sense that channel $C_i$ is not congested and make a decision to switch to that channel. As a result, $C_i$ becomes congested, so APs will seek to switch to another channel $C_j$, where the problem will reoccur. This situation displays that RRM algorithms need a certain degree of coordination between APs using an algorithm aiming to improve overall WLAN capacity and thus achieve a global optimum.
+In general, uncoordinated decision-making like LCCS tends to yield suboptimal results. Consider an extreme case, where a number of APs can sense that channel $C_i$ is not congested and make a decision to switch to that channel. As a result, $C_i$ becomes congested, so APs will seek to switch to another channel $C_j$, where the problem will reoccur. This situation suggests that using a coordinated RRM policy between APs can improve overall WLAN capacity and thus achieve a global optimum.
 
 Research on Transmit Power Control (TPC) methods, which adjust transmission power $P_{Tx}$ to maintain an acceptable Signal-to-Noise-plus-Interference Ratio (SINR), shows potential for enhancing bandwidth. However, criticisms regarding these studies' simplified models, unrealistic experimental setups, and statistically uncertain outcomes suggest the need for further investigation \cite{michalskiSimplePerformanceboostingAlgorithm2016,kazminIspolzovanieNeyronnyhSetey2021}. The effect of IEEE 802.11 roaming on TPC is underexplored, especially in scenarios where APs are part of the same extended service set (ESS), which is more common in enterprise WLANs.
 
@@ -86,7 +153,7 @@ Client Assignment is typically handled by the 802.11 client through roaming deci
 
 Channel allocation and transmit power selection, though extensively studied, are often addressed as separate entities in the literature. Combining these factors introduces complexity, as their objectives can conflict. For example, if the objective is to minimize interference, it can be achieved with minimizing the transmission power. However, such outcome probably does not satisfy coverage and quality of service requirements. On the other hand, considering channel and transmit power together can also be troublesome, since change in one variable would change the overall RF situation, and the algorithm would not converge.
 
-Another aspect is metric selection. Although the most intuitive and desired metrics are high-level ones like network throughput and capacity, actual values of such metrics cannot be used at the time of RRM computations: a significant time of monitoring is required to estimate how throughput changed, so only past records can be used. Another, simpler approach, followed by many works, is to assume that network throughput or capacity is a function of one or more physical layer metrics, such as interference, Received Signal Strength Indicator (RSSI), Rx signal power etc. Indeed, low interference level and low power signal from other APs implies that less transmission errors tend to happen, and more frames can be transmitted with CSMA/CA MAC mechanism.
+Another aspect is choice of metrics. Although the most intuitive and desired metrics are high-level ones like network throughput and capacity, actual values of such metrics cannot be used at the time of RRM computations: a significant time of monitoring is required to estimate how throughput changed, so only past records can be used. Another, simpler approach, followed by many works, is to assume that network throughput or capacity is a function of one or more physical layer metrics, such as interference, Received Signal Strength Indicator (RSSI), Rx signal power etc. Indeed, low interference level and low power signal from other APs implies that less transmission errors tend to happen, and more frames can be transmitted with CSMA/CA MAC mechanism.
 This reliance on physical layer metrics allows for more immediate adjustments in RF (Radio Frequency) configuration of a WLAN, ensuring the adaptability of the network to immediate environmental changes.
 However, RRM adjustments in practice can lead to disruptions. Most client devices lack support for the Channel Switch Announcement feature from 802.11h, interpreting a channel switch as if the AP has become unavailable. Therefore, utilizing historical data becomes instrumental in making informed, albeit infrequent and periodic, RRM decisions.
 
@@ -198,6 +265,8 @@ Additionally, Aruba APs collect several other metrics, including L2 metrics \cit
 
 Aruba documentation indicates that these metrics offer a "snapshot of the current RF health state" \cite{ARMMetrics}, suggesting they are informational tools for network administrators rather than being actively used in RRM decision-making.
 
+% \section {Concerns and Requirements for an RRM algorithm}
+
 \section {Conclusion}
 \label{chap:lr:sec:conclusion}
 Summarizing the insights from prior sections, I can conclude that the problem of radio resource management in 802.11 WLANs is still relevant, since the IEEE 802.11 standard provides only limited tools for RRM, while existing commercial solutions are proprietary and lack interoperability. Thus, there is a need for a novel RRM algorithm that can be implemented in existing enterprise WLAN infrastructure and improve overall network performance.
@@ -209,7 +278,7 @@ Moreover, presence of WLC as centralized entity with orders of magnitude higher 
 
 Despite the promising capabilities of per-link and per-flow radio resource management approaches for optimizing wireless networks in a more fine-grained and application-aware manner, they have considerable limitations that currently prevent from implementing them in production wireless networking solutions.
 
-As a summary of this survey, we can identify the research gap: the problem of radio resource management in 802.11 WLANs is still relevant, since IEEE 802.11 standard does not provide fully-fledged RRM, while existing commercial solutions are proprietary and lack interoperability. Thus, there is a need for a novel RRM algorithm addressing key issues, including:
+As a summary of this survey, we can identify the research gap: the problem of radio resource management in 802.11 WLANs is still relevant, since IEEE 802.11 standard does not provide fully-fledged RRM, while existing commercial solutions are proprietary and lack interoperability. Thus, there is a need for an RRM algorithm addressing key issues, including:
 \begin{itemize}
     \item Design for centralized management of enterprise WLAN, working as a part of Wireless LAN Controller;
     \item Applicability with current hardware and software, namely:
