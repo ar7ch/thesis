@@ -2,17 +2,20 @@
 \label{chap:impl}
 
 
-This chapter is dedicated to implementing the RRMv2 algorithm described in Section \ref{chap:research:sec:rrmv2} and evaluating its performance compared with existing algorithms. In this study, I used the ns-3 discrete-event simulation framework for implementing and evaluating different RRM algorithms.
+This chapter is dedicated to implementing the \textit{RRMGreedy++} algorithm described in Section \ref{chap:research:sec:rrmv2}, as well as other algorithms described in Section \ref{chap:lr} and comparing their performance. In this study, I use the ns-3 discrete-event simulation framework for implementing and evaluating different RRM algorithms.
 
-The chapter is organized as follows.
-Section \ref{chap:impl:sec:simulation_method} describes the simulation methodology used to evaluate the performance of RRM algorithms, and the process of adjusting ns-3 to needs of running and evaluating RRM algorithms.
-Section \ref{chap:impl:sec:implementation} describes my implementation of RRMv2, RRMGreedy, and Least Congested Channel Search (LCCS) algorithms in ns-3.
-Section \ref{chap:impl:sec:eval} presents the results of the simulation study, comparing RRM algorithms: RRMv2, RRMGreedy, and Least Congested Channel Search (LCCS), a simple per-cell algorithm implemented in practically every home Wi-Fi router, in terms of network throughput and interference.
-Finally, Section \ref{chap:impl:sec:conclusion} concludes the chapter with a summary of the results and a discussion of the implications of the study.
+The chapter is organized as follows:
+\begin{itemize}
+    \item Section \ref{chap:impl:sec:simulation_method} describes the simulation methodology used to evaluate the performance of RRM algorithms, and the process of adjusting ns-3 to needs of running and evaluating RRM algorithms;
+    \item Section \ref{chap:impl:sec:implementation} describes my implementation of \textit{RRMGreedy++}, \textit{RRMGreedy}, and \textit{Least Congested Channel Search} (LCCS) algorithms in ns-3;
+    \item Section \ref{chap:impl:sec:eval} presents the results of the simulation study, comparing RRM algorithms: RRMv2, RRMGreedy, and Least Congested Channel Search (LCCS), in terms of network throughput and interference;
+    \item Finally, Section \ref{chap:impl:sec:conclusion} concludes the chapter with a summary of the results and a discussion of the implications of the study.
+
+\end{itemize}
 
 \section{Simulation methodology}
 \label{chap:impl:sec:simulation_method}
-In this study, I implement LCCS, RRMGreedy and RRMv2 algorithms in ns-3 simulator to have a scalable, flexible (from dozens to hundreds of APs), and reproducible (unlike real-world testbeds) way to evaluate performance of different RRM algorithms under different conditions.
+In this study, I implement LCCS, RRMGreedy and RRMGreedy++ algorithms in ns-3 simulator to have a scalable, flexible (from dozens to hundreds of APs), and reproducible (unlike real-world testbeds) way to evaluate performance of different RRM algorithms under different conditions.
 
 \subsection{RRM support in ns-3}
 The ns-3 simulator is a comprehensive tool for research in computer networks, modeling each layer of the OSI model and providing simulations for wired and wireless communication technologies and protocols, including LTE, Wi-Fi, and Ethernet. Nevertheless, despite its extensive capabilities, there is a limited support for simulating RRM algorithms.
@@ -79,10 +82,10 @@ Note that I intended to keep the algorithm simple to conform closer with the ori
 RRMGreedy is a centralized super-cell algorithm used by a leading Russian telecommunications vendor, described and analyzed in Chapter \ref{sec:baseline}.
 Implementing RRMGreedy in ns-3 requires a centralized entity to gather data from all APs and perform computations. I introduce \texttt{RRMGreedyAlgo} class, which is responsible for collecting data from all APs and making decisions on channel and power adjustments.
 Unlike LCCS, RRMGreedy is not invoked by APs due to its centralized nature. Since the original RRMGreedy does not requests scanning data directly from APs, but rather queries the database to which APs send periodical reports, I aimed to achieve similar behavior.
-Thus, \texttt{RRMGreedyAlgo::AddApScandata} is set as a callback for each \texttt{Scanner} instance in an RRM group to submit the individual scanning results to RRMGreedy after every full scanning cycle. Each \texttt{scandata} item has a timestamp, and RRMGreedy does not accept scanning data older than \textit{scandataStaleTime\_s} parameter (in seconds). Callback method \texttt{RRMGreedyAlgo::Decide} is invoked by the simulation scheduler at regular intervals to perform RRM decisions.
-Channel Planning is implemented using the same approach found in LCCS. However, implementing TPC was a considerable challenge, since ns-3 does not support setting AP's transmit power directly. To address this issue, I have introduced a custom \texttt{TxPowerManager} class that is responsible for setting AP's transmit power based on the RRM decision. The \texttt{TxPowerManager} class is invoked by \texttt{RRMGreedyAlgo} to set transmit power levels of managed APs.
+Thus, \texttt{RRMGreedyAlgo::AddApScandata} is set as a callback for each \texttt{Scanner} instance in an RRM group to submit the individual scanning results to RRMGreedy after every full scanning cycle. Each \texttt{scandata} item has a timestamp, and RRMGreedy does not accept scanning data older than \textit{scandataStaleTime} parameter (in seconds). Callback method \texttt{RRMGreedyAlgo::Decide} is invoked by the simulation scheduler at regular intervals to perform RRM decisions.
+Channel Planning is implemented using the same approach found in LCCS. However, implementing TPC was a considerable challenge, since ns-3 does not support setting AP's transmit power directly. To address this issue, I manipulated starting and ending Tx power levels of phy layer of a WifiNetDevice of an AP node.
 
-\subsection{RRMv2}
+\subsection{RRMGreedy++}
 \label{chap:impl:sec:implementation:rrmv2}
 TBD
 

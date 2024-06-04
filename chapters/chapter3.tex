@@ -4,7 +4,7 @@
 \label{chap:research}
 
 The chapter is organized as follows. Section \ref{chap:research:sec:problem_statement} defines the problem of RRM and objectives of an RRM algorithm.
-Section \ref{sec:baseline} describes the RRM algorithm called RRMGreedy, developed by a Russian telecommunications vendor, analyzes the flow and asymptotic complexity of the algorithm, and identifies flaws and limitations of RRMGreedy. The objective of this study is to create an algorithm outperforming RRMGreedy in terms of network capacity and throughput; in Section \ref{chap:research:sec:rrmv2} I propose a new RRM algorithm, called RRMv2, that addresses the limitations of RRMGreedy.
+Section \ref{sec:baseline} describes the RRM algorithm called RRMGreedy, developed by a Russian telecommunications vendor, analyzes the flow and asymptotic complexity of the algorithm, and identifies flaws and limitations of RRMGreedy. The objective of this study is to create an algorithm outperforming RRMGreedy in terms of network capacity and throughput; in Section \ref{chap:research:sec:rrmv2} I propose a new RRM algorithm, called RRMGreedy++, that addresses the limitations of RRMGreedy.
 
 
 \section{Problem statement}
@@ -345,7 +345,7 @@ Next, I analyze time complexity of the main phases of the algorithm:
 \label{sec:flaws}
 
 Based on the analysis carried out above in this chapter, we can identify the following issues with the \textit{RRMGreedy} algorithm:
-\begin{itemize}
+\begin{enumerate}
     \item \textit{ChannelInterference()}, calculating how much two channels interfere, only yields binary values 1 or 0. Due to the presence of cross-channel interference, the result of \textit{ChannelInterference()} should be continuous in range $[0; 1]$, not discrete;
     % \item Following on the previous point, interference estimation is not accurate. It is based on signal power only.
     \item Noise floor should be included into the interference metric, since it can drastically affect the performance on the channel;
@@ -356,18 +356,57 @@ Based on the analysis carried out above in this chapter, we can identify the fol
     \item Change with no improvements will be staged anyway, so disruptive channel switch will occur even if it is not necessary;
     \item Finally, selecting channel that minimizes the interference for an interface in a greedy way could not lead to the global optimum.
     % \item TPC sums all historical record for TPC. Why, if the latest record is the most adequate one
-\end{itemize}
+\end{enumerate}
 
 % \subsection{Evaluation on real-world data}
 % \label{sec:eval}
-\section{RRMv2 design}
+\section{RRMGreedy++ design}
 \label{chap:research:sec:rrmv2}
+% As discussed in \ref{chap:lr:sec:rrm_approaches}, RRM algorithm, given the current state of network, that is, who can hear who and how strong, should decide on the channel and transmit power assignments for every AP, so that network capacity and throughput are maximized. For per-cell decisions, it is simple, and most of the kinds of the algorithm can fit into LCCS definition: scan each channel, get an estimate how good each channel is (using a certain metric, such as interference, number of APs operating on the same channel, etc.), and switch to the best one. On the other hand, a super-cell aims to make decisions improving the performance of the whole network. Usually this is achieved by using a cumulative metric across all cells, such as total interference, and trying to minimize it. Thus, a channel and (or) transmit power allocation that minimizes the cumulative metric should be chosen. As shown above, RRMGreedy selects channels to minimize interference at each AP, while there is an improvement cumulative metric.
 
-\section{Design considerations}
-As discussed in \ref{chap:lr:sec:rrm_approaches}, RRM algorithm, given the current state of network, that is, who can hear who and how strong, should decide on the channel and transmit power assignments for every AP, so that network capacity and throughput are maximized. For per-cell decisions, it is simple, and most of the kinds of the algorithm can fit into LCCS definition: scan each channel, get an estimate how good each channel is (using a certain metric, such as interference, number of APs operating on the same channel, etc.), and switch to the best one. On the other hand, a super-cell aims to make decisions improving the performance of the whole network. Usually this is achieved by using a cumulative metric across all cells, such as total interference, and trying to minimize it. Thus, a channel and (or) transmit power allocation that minimizes the cumulative metric should be chosen. As shown above, RRMGreedy selects channels to minimize interference at each AP, while there is an improvement cumulative metric.
+Founding on limitations identified in Section \ref{sec:flaws}, I introduce the following improvements:
+
+\begin{enumerate}
+    \item \textbf{Continuous interference estimation}: I propose a slightly updated \textit{ChannelInterference()} implementation that differs based on how much channels overlap (Algorithm \ref{lst:channel_interfv2});
+    \item \textbf{Updated cumulative metrics approach}:
+        \begin{itemize}
+            \item \textbf{Noise floor} for \textit{FromIfaceInterference()} cumulative estimation. This affects channel selection decision, discouraging channels with high noise floor level;
+            \item \textbf{Channel utilization}: cumulative interference metric now takes into account channel utilization in its simplest form: number of clients of the access point. This will discourage APs from using channels with many active clients that can be heard.
+        \end{itemize}
+    \item \textbf{RRMGreedy Flow Improvements}: 
+        \begin{itemize}
+            \item The "$TxDiff \rightarrow \max$" phase of RRMGreedy (Step 1 of Algorithm \ref{alg:greedyRRM}) is moved after the Channel Selection part and before the Transmission Power Adjustment part;
+            \item The \textit{GroupState} structure, containing the current state of \rrmG, is saved for the previous iteration of the algorithm. If the interference score increases, \textit{RRMGreedy++} aborts and returns to the previous \textit{GroupState};
+            \item Iterations that yield a new group configuration with $GroupInterference < \epsilon$, where $\epsilon$ is a configurable threshold pre-defined to $\epsilon = 0.005$, are discarded.
+        \end{itemize}
+    
+\end{enumerate}
+
+\begin{algorithm}[H]
+\caption{ChannelInterference v2}
+\label{lst:channel_interfv2}
+\DontPrintSemicolon % Don't print semicolons at the end of each line
+\SetKwFunction{FMain}{ChannelInterference}
+\SetKwProg{Fn}{Function}{:}{}
+\Fn{\FMain{$ch_1$, $ch_2$, $width = 20$}}{
+    \If{$ch_1 < 36$ and $ch_2 < 36$}{ % 2.4 GHz band
+        $freqDiff \gets \card{ch_1 - ch_2} \times 5$\;
+        $maxDistance \gets width + 5$\; % Maximum distance for full interference includes channel width plus adjacent overlap
+    }
+    \ElseIf{$ch_1 \geq 36$ and $ch_2 \geq 36$}{ % 5 GHz band
+        $freqDiff \gets \card{ch_1 - ch_2} \times 20$\;
+        $maxDistance \gets width$\; % In 5 GHz band, max distance is the channel width itself
+    }
+    \If{$freqDiff > maxDistance$}{
+        \Return 0.0\; % No significant interference
+    }
+    $overlap \gets 1 - \frac{freqDiff}{maxDistance}$\; % Linear interpolation between 0 and 1 based on overlap
+    \Return $overlap$\;
+}
+\end{algorithm}
 
 
 
 \section{Conclusion}
 \label{chap:research:sec:conclusion}
-TBD
+In this chapter, I have carried out analysis of a production algorithm called \textit{RRMGreedy}, used by a leading Russian telecommunications company. By analyzing source code of \textit{RRMGreedy}, I have estimated asymptotic complexity and found several issues potentially affecting the efficiency of the algorithm. To address those issues, I propose a set of enhancements for \textit{RRMGreedy}, together called \textit{RRMGreedy++}. In Chapter \ref{chap:eval}, I proceed with experimental evaluation of the RRM algorithms, including \textit{RRMGreedy++}, by introducing a new framework for ns-3 network simulator I have created to facilitate RRM assessment.

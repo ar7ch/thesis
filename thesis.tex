@@ -146,13 +146,15 @@
 % \usepackage{algorithmicx}
 % \usepackage{algpseudocode}
 \usepackage[linesnumbered,ruled,vlined]{algorithm2e}
-
 \begin{document}
 
 \includepdf[offset=70 -60]{title.pdf}
 \tableofcontents
 \listoftables
 \listoffigures
+\renewcommand{\figureautorefname}{Fig.}
+\renewcommand{\chapterautorefname}{Chapter}
+\renewcommand{\sectionautorefname}{Section}
 
 
 \newpage

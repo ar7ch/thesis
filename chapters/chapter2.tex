@@ -9,7 +9,7 @@ The purpose of this chapter is to explore existing approaches on Radio Resource 
     \item Section \ref{chap:lr:sec:prop_rrm} provides an overview of proprietary RRM solutions from major vendors;
     \item Section \ref{chap:lr:sec:conclusion} summarizes the chapter.
 \end{itemize}
-Table \ref{defs_table} contains the list of definitions used in this chapter.
+Table \ref{appx:defs_table} contains the list of definitions used in this chapter.
 
 \section{Overview of IEEE 802.11 standard}
 \label{chap:lr:sec:80211_overview}
@@ -84,16 +84,16 @@ As described in Section \ref{chap:intro:sec:rrm}, a radio resource management al
 
 \subsection {IEEE 802.11h}
 \label{chap:lr:sec:80211h}
-To comply with legal requirements on transmissions in 5 GHz, 802.11h-2003 \cite{80211h} amendment (\textit{Spectrum and Transmit Power Management Extensions}) was introduced. Since the goal of this amendment is to prevent legacy 802.11a 5GHz APs from interference with radars, 802.11h is not oriented for optimizing capacity of a wireless network. However, 802.11h introduces \cite{konsgenSpectrumManagementAlgorithms2010} spectrum management methods, namely, \textit{Dynamic Frequency Selection (DFS)}, facilitating automatic change of AP's operating frequency, and \textit{Transmit Power Control (TPC)}, adjusting the power of AP's transmitter.
-Those methods, however, do not implement RRM in the sense of optimizing network capacity, but rather are aimed at preventing interference with radars operating on the 5 GHz band. 802.11h describes procedures for: quieting the channel to detect presence of a radar, switching to another channel if a radar detecting, advertising the channel switch to client stations (STAs). Radar detection itself, though, is beyond the scope of 802.11 standard \cite{80211h}.
-However, the methods introduced in 802.11h can be considered as a foundation for further research on RRM algorithms.
+To comply with legal requirements on transmissions in 5 GHz, 802.11h-2003 \cite{ieee80211h} amendment (\textit{Spectrum and Transmit Power Management Extensions}) was introduced. Since the goal of this amendment is to prevent legacy 802.11a 5GHz APs from interference with radars, 802.11h is not oriented for optimizing capacity of a wireless network. However, 802.11h introduces \cite{konsgenSpectrumManagementAlgorithms2010} spectrum management methods, namely, \textit{Dynamic Frequency Selection (DFS)}, facilitating automatic change of AP's operating frequency, and \textit{Transmit Power Control (TPC)}, adjusting the power of AP's transmitter.
+Those methods, however, do not implement RRM in the sense of optimizing network capacity, but rather are aimed at preventing interference with radars operating on the 5 GHz band. 802.11h describes procedures for: quieting the channel to detect presence of a radar, switching to another channel if a radar detecting, advertising the channel switch to client stations (STAs). However, the description of a radar detection procuedre is beyond the scope of 802.11 standard \cite{ieee80211h}.
+However, the frame types and measurement reporting mechanisms introduced in 802.11h can be considered as a foundation for further research on RRM algorithms.
 
 
 % \subsubsection{Transmit Power Control}
 
 \subsection {IEEE 802.11k}
 \label{chap:lr:sec:80211k}
-The amendment 802.11k-2008 \cite{80211k} (\textit{Radio Resource Measurement}, not to be confused with \textit{Radio Resource Management}) improves the performance of roaming. Roaming is a process of station moving from one access point to another \cite{colemanCWNACertifiedWireless2021}. The amendment 802.11k improves roaming by allowing stations to request from access points various reports, such as \textit{neighbor reports} for discovering possible access points that STA can roam to, \textit{link measurements} to estimate how well AP can hear the station etc. This allows stations to reduce power consumption, speed up roaming and decrease power consumption and airtime usage spent on sending probe requests to each channel when trying to find another AP to roam.
+The amendment 802.11k-2008 \cite{ieee80211k} (\textit{Radio Resource Measurement}, not to be confused with \textit{Radio Resource Management}) improves the performance of roaming. Roaming is a process of station moving from one access point to another \cite{colemanCWNACertifiedWireless2021}. The amendment 802.11k improves roaming by allowing stations to request from access points various reports, such as \textit{neighbor reports} for discovering possible access points that STA can roam to, \textit{link measurements} to estimate how well AP can hear the station etc. This allows stations to reduce power consumption, speed up roaming and decrease power consumption and airtime usage spent on sending probe requests to each channel when trying to find another AP to roam.
 However, this amendment is also not aimed at optimizing network capacity, but rather at improving roaming performance.
 
 \subsection {IEEE 802.11ax}
@@ -284,9 +284,9 @@ As a summary of this survey, we can identify the research gap: the problem of ra
     \item Applicability with current hardware and software, namely:
     \begin{itemize}
         \item Effortless integration with OpenWRT-based access points;
-        \item Requires data like physical and link-layer statistics that can be obtained using only regular Linux Wi-Fi drivers like \texttt{nl80211} and standard Linux networking tools;
+        \item Requires data like physical and link-layer statistics that can be obtained using only regular Linux Wi-Fi drivers like \texttt{nl80211}, and standard Linux networking tools;
     \end{itemize}
-    \item Performing not worse than existing RRM algorithm from Wimark Systems that will be analyzed in Chapter \ref{sec:baseline};
+    \item Performing not worse than existing RRM algorithm \textit{RRMGreedy}, analyzed in Chapter \ref{sec:baseline};
     \item Able to combine both channel selection and transmit power adjustment to improve RF environment and network performance.
 \end{itemize}
 
