@@ -4,7 +4,7 @@
 \label{chap:research}
 
 The chapter is organized as follows. Section \ref{chap:research:sec:problem_statement} defines the problem of RRM and objectives of an RRM algorithm.
-Section \ref{sec:baseline} describes the RRM algorithm called RRMGreedy, developed by a Russian telecommunications vendor, analyzes the flow and asymptotic complexity of the algorithm, and identifies flaws and limitations of RRMGreedy. The objective of this study is to create an algorithm outperforming RRMGreedy in terms of network capacity and throughput; in Section \ref{chap:research:sec:rrmv2} I propose a new RRM algorithm, called RRMGreedy++, that addresses the limitations of RRMGreedy.
+In Section \ref{sec:baseline}, I describe the RRM algorithm called \textit{RRMGreedy}, developed by a Russian telecommunications vendor, analyze the flow and asymptotic complexity of the algorithm, and identify its flaws and limitations. The objective of this study is to create an algorithm outperforming \textit{RRMGreedy} in terms of network capacity and throughput; in Section \ref{chap:research:sec:rrmv2} I propose a new RRM algorithm, called \textit{RRMGreedy++}, that addresses the flaws of \textit{RRMGreedy}.
 
 
 \section{Problem statement}
@@ -17,7 +17,7 @@ The greedy RRM algorithm, used by a major telecommunications vendor, which will 
 In particular, the novel algorithm should result in network throughput and capacity greater or equal than \textit{RRMGreedy} in corner cases. In this light, I start with describing \textit{RRMGreedy},
 
 \subsection{RRMGreedy: flow description}
-This section describes \textit{RRMGreedy} algorithm.
+This section describes \textit{RRMGreedy}.
 As the name suggests, the algorithm tries to achieve optimal radio resource allocation in a greedy way, taking the local optimum for each device in a RRM group.
 The algorithm operates on the granularity of interfaces rather than access points. I consider it to be reasonable, since practically different interfaces operate on completely different frequency bands, so when are dealing with, for example, 5 GHz band, the whole access point can be considered as a single interface.
 
@@ -58,7 +58,7 @@ On a high level, the algorithm consists of two main steps --- \textbf{Channel Se
 \SetAlCapHSkip{0pt}
 \IncMargin{-\parindent}
 \LinesNumbered
-\begin{algorithm}[H]
+\begin{algorithm}[hbpt]
 \caption{RRMGreedy}
 \label{alg:greedyRRM}
 
@@ -282,7 +282,7 @@ Function \textit{FromIfaceInterference()} (Algorithm \ref{rrm:fromifaceinterf}) 
 \newcommand{\rrmIface}{interface}
 \newcommand{\rrmScandata}{scandata}
 
-\begin{algorithm}[H]
+\begin{algorithm}[hbpt]
 \caption{FromIfaceInterference()}
 \label{rrm:fromifaceinterf}
 \DontPrintSemicolon
@@ -409,4 +409,4 @@ Founding on limitations identified in Section \ref{sec:flaws}, I introduce the f
 
 \section{Conclusion}
 \label{chap:research:sec:conclusion}
-In this chapter, I have carried out analysis of a production algorithm called \textit{RRMGreedy}, used by a leading Russian telecommunications company. By analyzing source code of \textit{RRMGreedy}, I have estimated asymptotic complexity and found several issues potentially affecting the efficiency of the algorithm. To address those issues, I propose a set of enhancements for \textit{RRMGreedy}, together called \textit{RRMGreedy++}. In Chapter \ref{chap:eval}, I proceed with experimental evaluation of the RRM algorithms, including \textit{RRMGreedy++}, by introducing a new framework for ns-3 network simulator I have created to facilitate RRM assessment.
+In this chapter, I have carried out analysis of a production RRM algorithm called \textit{RRMGreedy}, used by a leading Russian telecommunications vendor. By analyzing source code of \textit{RRMGreedy}, I have estimated asymptotic complexity and found several issues potentially affecting the efficiency of the algorithm. To address those issues, I propose a set of enhancements for \textit{RRMGreedy}, together called \textit{RRMGreedy++}. In Chapter \ref{chap:eval}, I proceed with experimental evaluation of the RRM algorithms, including \textit{RRMGreedy++}, by introducing a new framework for ns-3 network simulator I have created to facilitate RRM assessment.

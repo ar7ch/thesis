@@ -24,8 +24,8 @@ In addressing this gap, \cite{bharadwajSimulationFrameworkRadio2017} introduced 
 
 However, this model presents several deviations from real-world scenarios:
 \begin{itemize}
-    \item Most hardware, apart from high-end Cisco models, lacks a dedicated scanning interface, leading to scanning activities disrupting normal data exchanges. This interruption, referred to as "dead time," denotes periods when scanning supersedes the standard operation of an Access Point (AP).
-    \item For mobile devices, where battery efficiency is paramount, scanning capabilities are significantly restricted.
+    \item Most hardware, apart from high-end Cisco models, lacks a dedicated scanning interface, leading to scanning activities disrupting normal data exchanges. This interruption, referred to as \textit{"dead time,"} denotes periods when scanning supersedes the standard operation of an Access Point (AP);
+    \item For mobile devices, scanning capabilities are significantly restricted to avoid draining the battery;
     \item The \texttt{RriModule} code and its associated examples, designed for ns-3 version 3.20, are incompatible with the current ns-3 version 3.40 API and the legacy Waf build system. As a part of my contribution, I have refactored the original code to align with the latest ns-3 version 3.41 API, specifically updating the \texttt{RriModule} to integrate with the latest \texttt{WifiMac} ns-3 API and the CMake build system. This adaptation ensures the compatibility and execution on the newest ns-3 version. The modified source code is publicly available on GitHub.
 \end{itemize}
 
@@ -92,12 +92,10 @@ TBD
 
 \section{Evaluation}
 \label{chap:impl:sec:eval}
-To evaluate the performance of RRM algorithms, I have conducted a series of test cases for simulations in ns-3.
-The simulation setup is as follows.
+To evaluate the performance of RRM algorithms, I have conducted a series of test cases for simulations in ns-3. These test case share several common parameters that are fixed (\autoref{table:fifsimulation_params}); each test case is also characterized by a set of unique parameters (\autoref{table:eval_testcases})
 \subsection{Simulation settings}
 \begin{longtable}{|c|c|}
-\caption[Simulation parameters]{Simulation parameters (shared among all test cases)} \label{table
-:fifsimulation_params} \\
+\caption[Simulation Parameters]{Fixed Simulation Parameters} \label{table:fifsimulation_params} \\
 \hline
 \textbf{Parameter} & \textbf{Value} \\
 \hline
@@ -116,21 +114,22 @@ Channel width & 20 MHz \\
 \hline
 \end{longtable}
 
-\begin{itemize}
-    \item \textbf{Test Case 1:}
-    \begin{itemize}
-        \item Number of APs: 3;
-        \item Number of STAs: 7;
-        \item STA allocations by AP: $\{3, 2, 2\}$;
-        \item Initial channel allocations by AP: $\{1, 1, 1\}$;
-        \item Initial channel allocations on stations: all start on channel 1 and until given SSID is found;
-        \item Traffic model: each AP has at least one pair of STAs, where first STA in the pair generates UDP generating traffic as UDP client, and second echoing it back to client as UDP server;
-        \item Simulation time: 10s.
-    \end{itemize}
-\end{itemize}
+% \begin{itemize}
+%     \item \textbf{Test Case 1:}
+%     \begin{itemize}
+%         \item Number of APs: 3;
+%         \item Number of STAs: 7;
+%         \item STA allocations by AP: $\{3, 2, 2\}$;
+%         \item Initial channel allocations by AP: $\{1, 1, 1\}$;
+%         \item Initial channel allocations on stations: all start on channel 1 and until given SSID is found;
+%         \item Traffic model: each AP has at least one pair of STAs, where first STA in the pair generates UDP generating traffic as UDP client, and second echoing it back to client as UDP server;
+%         \item Simulation time: 10s.
+%     \end{itemize}
+% \end{itemize}
 
 \begin{longtable}{|p{6cm}|p{7cm}|}
-\caption{Test Case Configurations} \\
+\caption{Test Case Configurations}
+\label{table:eval_testcases} \\
 \hline
 \multicolumn{2}{|p{8cm}|}
 {\textbf{Test Case 1}} \\ \hline
@@ -140,25 +139,143 @@ Number of APs & 3 \\ \hline
 Number of STAs & 7 \\ \hline
 Number of STA allocated for each AP & $\{3, 2, 2\}$ \\ \hline
 Initial channel allocations for APs  & $\{1, 1, 1\}$ \\ \hline
-Initial channel allocations for STAs &  $\{1, 1, 1, 1, 1, 1, 1\}$ \\ \hline
+Initial channel allocations for STAs & All on channel 1 \\ \hline
 Traffic model  & each AP has at least one pair of STAs, where first STA in the pair generates UDP traffic as client, and second echoing it back to client as UDP server \\ \hline
 Simulation time & 10s \\ \hline
+Offered load per flow (Mbit/s) & 1.64 \\ \hline
+\hline
+\multicolumn{2}{|p{8cm}|}
+{\textbf{Test Case 2}} \\ \hline
+\textbf{Parameter} & \textbf{Value} \\ \hline
+% \multicolumn{2}{@{}l}{} \\
+Number of APs & 4 \\ \hline
+Number of STAs & 7 \\ \hline
+Number of STA allocated for each AP & $\{3, 2, 2, 2\}$ \\ \hline
+Initial channel allocations for APs  & $\{1, 1, 1, 1\}$ \\ \hline
+Initial Tx power allocations for APs  & $\{20, 20, 20, 20\}$ \\ \hline
+Initial channel allocations for STAs &  All on channel 1 \\ \hline
+Traffic flows and traffic model  & Each AP has at least one pair of STAs, where first STA in the pair generates UDP traffic as client, and second echoing it back to client as UDP server \\ \hline
+Simulation time (seconds) & 10 \\ \hline
+Offered load per flow (Mbit/s) & 1.64 \\ \hline
+\hline
+\multicolumn{2}{|p{8cm}|}
+{\textbf{Test Case 3}} \\ \hline
+\textbf{Parameter} & \textbf{Value} \\ \hline
+% \multicolumn{2}{@{}l}{} \\
+Number of APs & 8 \\ \hline
+Number of STAs & 7 \\ \hline
+Number of STA allocated for each AP & $\{3, 2, 2, 2\}$ \\ \hline
+Initial channel allocations for APs  & $\{1, 1, 1, 1\}$ \\ \hline
+Initial Tx power allocations for APs  & $\{20, 20, 20, 20\}$ \\ \hline
+Initial channel allocations for STAs &  All on channel 1 \\ \hline
+Traffic flows and traffic model  & Each AP has at least one pair of STAs, where first STA in the pair generates UDP traffic as client, and second echoing it back to client as UDP server \\ \hline
+Simulation time (seconds) & 10 \\ \hline
+Offered load per flow (Mbit/s) & 8.192 \\ \hline
 \end{longtable}
 
 \subsection{Metrics}
-I have evaluated the performance of RRM algorithms in terms of following metrics:
-\begin{itemize}
-    \item Total throughput of a wireless LAN;
-    \item Average delay;
-    \item Total SNR (Signal-to-Noise Ratio) of a wireless LAN;
-    \item Tx busy time;
-    \item Rx idle time.
-\end{itemize}
+For evaluation, I collect various L3 and L2 metrics. \autoref{table:gathered_metrics} contains collected metrics, their definitions and methods to capture them using ns-3.
+
+\begin{longtable}{|p{5cm}|p{5cm}|p{5cm}|}
+\caption{Gathered Metrics}
+\label{table:gathered_metrics} \\
+\hline
+\textbf{Metric} & \textbf{Definition} & \textbf{Means of capture}\\ \hline
+Average Total WLAN Throughput & Number of L3 IPv4 Rx bytes in WLAN divided by Tx time for all nodes & ns-3 \texttt{FlowMonitor} class \\
+\hline
+Average L3 Delay & Average time delta between L3 (IPv4) Tx and Rx events & ns-3 \texttt{FlowMonitor} class \\
+\hline
+Average Total WLAN SNR (Signal-to-Noise Ratio) & Average SNR of frames received by every node in WLAN & ns-3 \texttt{MonitorSnifferRx} event \\
+\hline
+Average Medium Busy Time & Total time when Wi-Fi device could not transmit due to occupied medium & ns-3 \texttt{YansWifiPhy/State} trace source, notifies when Wifi PHY enters \texttt{CCA\_BUSY} state \\
+\hline
+Average Medium Idle Time & Total time for Wi-Fi device both not receiving and transmitting & ns-3 \texttt{YansWifiPhy/State} trace source, notifies when Wifi PHY enters \texttt{IDLE} state\\
+\hline
+\end{longtable}
+
 
 \subsection{Results}
-The results for Test Case 1 are presented below. The scenario had shown that 
+The results of simulation are presented below both in tabular (\autoref{table:simulation_res}) and graphical forms.
 
-TBD
+\begin{longtable}{|p{3.5cm}|p{2.5cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+\caption{Simulation Results}
+\label{table:simulation_res} \\
+\hline
+\multicolumn{6}{|p{4cm}|} {\textbf{Test Case 1}} \\ \hline
+\textbf{Algorithm} & \textbf{Throughput (Mbit/s)} & \textbf{Average Delay (sec.)} & \textbf{Average Medium Busy Time (sec.)} & \textbf{Average Medium Idle Time (sec.)} & \textbf{Average SNR  (dBm)} \\ \hline
+No RRM &    11.5872     &        0.0016       &       0.4295         &     0.9292  & 1\\ \hline
+RRMGreedy   &   13.4000    &         0.0005      &        0.1343        &      1.2330 & 1\\ \hline
+RRMGreedy++ &   13.4000    &         0.0004      &        0.1225        &      1.2486 & 1\\ \hline
+\hline
+\hline
+\multicolumn{6}{|p{4cm}|} {\textbf{Test Case 2}} \\ \hline
+\textbf{Algorithm} & \textbf{Throughput (Mbit/s)} & \textbf{Average Delay (sec.)} & \textbf{Average Medium Busy Time (sec.)} & \textbf{Average Medium Idle Time (sec.)} & \textbf{Average SNR  (dBm)} \\ \hline
+No RRM          & 13.9091         & 0.0137 & 0.5268 & 0.8559 & 1 \\
+\hline
+RRMGreedy       &    15.8602      &       0.0007      &        0.1756      &       1.2072 & 1  \\
+\hline
+RRMGreedy++     &  16.5084       &      0.0007       &       0.1715        &      1.2127 & 1   \\
+\hline
+\hline
+\multicolumn{6}{|p{4cm}|} {\textbf{Test Case 3}} \\ \hline
+\textbf{Algorithm} & \textbf{Throughput (Mbit/s)} & \textbf{Average Delay (sec.)} & \textbf{Average Medium Busy Time (sec.)} & \textbf{Average Medium Idle Time (sec.)} & \textbf{Average SNR  (dBm)} \\ \hline
+No RRM    &    12.7737       &      0.1900       &       1.0528        &      0.2407 & 59.0256   \\
+\hline
+RRMGreedy &     46.5821      &       0.0727      &        0.4341       &       0.7978 & 66.4141   \\
+\hline
+RRMGreedy++ &   48.6707      &       0.0405      &        0.4233       &       0.8132 & 73.4090   \\
+\hline
+\end{longtable}
+
+
+\begin{figure}[!ht]
+    \centering
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tc2_wlan_tput.png}
+        \subcaption{Average total WLAN throughput}
+        \label{fig:tc2:tput}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tc2_phy_busy.png}
+        \subcaption{Average medium busy time}
+        \label{fig:tc2:busy}
+    \end{minipage}
+    
+    \vspace{0.1em}
+    
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tc2_phy_idle.png}
+        \subcaption{Average medium idle time}
+        \label{fig:tc2:idle}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tc2_snr.png}
+        \subcaption{Average SNR}
+        \label{fig:tc2:snr}
+    \end{minipage}
+    
+    \vspace{0.1em}
+    
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tc2_l3_delay.png}
+        \subcaption{Average L3 Delay}
+        \label{fig:tc2:l3delay}
+    \end{minipage}
+    
+    \caption{Test Case 2 results}
+    \label{fig:tc2:plots}
+\end{figure}
+
 
 \section{Conclusion}
 \label{chap:impl:sec:conclusion}
+
+Based on results, I can suggest that RRM considerably improves performance of the WLAN. That is especially evident when dealing with high offered load, as in Test Case 3. Lower Medium Busy Time and higher Medium Idle Time can be interpreted as the consequence of medium becoming less congested. Moreover, RRMGreedy and RRMGreedy++ increase total SNR of the WLAN as a result of adjusting transmission powers and switching APs to orthogonal channels.
+

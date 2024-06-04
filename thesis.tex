@@ -59,6 +59,16 @@
 \theoremstyle{remark}
 \newtheorem*{example}{Example}
 
+\usepackage{ifluatex}
+\ifluatex
+  \usepackage{pdftexcmds}
+  \makeatletter
+  \let\pdfstrcmp\pdf@strcmp
+  \let\pdffilemoddate\pdf@filemoddate
+  \makeatother
+\fi
+\usepackage{svg}
+
 \newcommand{\card}[1]{\lvert{#1}\rvert}
 
 
@@ -69,6 +79,7 @@
 \usepackage{array}
 \usepackage{multirow,array}
 \usepackage{caption}
+\usepackage{svg}
 \usepackage{subcaption}
 \usepackage{hyperref}
 \usepackage{paralist}

@@ -1,49 +1,46 @@
 \appendix
-
 \makeatletter
 \let\@currsize\normalsize
 \makeatother
-\label{appx:defs_table}
-\begin{table}[h]
-    \centering
-    \begin{tabular}{| p{0.5\linewidth} | p{0.5\linewidth} |}\hline
-        \textbf{Term} & \textbf{Definition} \\ \hline
-        Signal & Airborne RF energy \\
-        \hline
-        Channel & A band of frequencies that 802.11 devices can use for communications \cite{AuthoritativeDictionaryIEEE2000} \\
-        \hline
-        Inteference & Destructive influence of another signal leading to degradation of signal quality and loss of frames \\
-        \hline
-        Noise & Signal that cannot be demodulated as 802.11 signal \\
-        \hline
-        SNR (Signal-to-Noise Ratio) & Signal quality metric, defined as ratio of signal power to the noise \\
-        \hline
-        SINR (Signal-to-Interference-plus-Noise Ratio) & Signal quality metric, defined as ratio of signal power to the sum of noise power and power of interefering signals \\
-        \hline
-        RSSI (Received Signal Strength Indicator) & A metric of a wireless signal quality defined in 802.11, varying from 0 to 255, where exact mappings to Rx signal power are vendor-specific. \\
-        \hline
-        Radio cell & Geographical area covered by a radio transmitter \cite{tanenbaumComputerNetworks2020} \\
-        \hline
-        Basic Service Set (BSS) & Set of stations belonging to the same radio cell and exchanging information \cite{konsgenSpectrumManagementAlgorithms2010} \\
-        \hline
-        Distribution System (DS) & Network that interconnects multiple BSSs and provides connectivity to a wired network \cite{konsgenSpectrumManagementAlgorithms2010} \\
-        \hline
-        Extended Service Set (ESS) & Set of Basic Service Sets connected by a DS \cite{konsgenSpectrumManagementAlgorithms2010} \\
-        \hline
-        Station (STA) & Client device that can connect to a wireless LAN \\
-        \hline
-        Access Point (AP) & Device providing stations wireless access to a distribution system \\
-        \hline
-        Infrastructure mode & Centralized mode of 802.11 WLAN operation using a star topology, where AP serves as a central entity for managing WLAN and switching traffic \\
-        \hline
-        Network capacity & Maximum transmission rate that any station can achieve in a given WLAN \\
-        \hline
-    \end{tabular}
-    \caption{Used terms and definitions}
-    \label{tab:my_label}
-\end{table}
-% \chapter{Extra Stuff}
-% \blindtext
+\chapter{Used terms}
 
-% \chapter{Even More Extra Stuff}
-% \blindtext
+\begin{longtable}{|p{6cm}|p{10cm}|}
+\caption{Used Terms and Definitions}
+\label{appx:table:defs_table} \\
+    \hline
+    \textbf{Term} & \textbf{Definition} \\ \hline
+    Signal & Airborne RF energy \cite{colemanCWNACertifiedWireless2021} \\
+    \hline
+    Channel & A band of frequencies that 802.11 devices can use for communications \cite{AuthoritativeDictionaryIEEE2000} \\
+    \hline
+    Inteference & Destructive influence of another signal leading to degradation of signal quality and loss of frames \\
+    \hline
+    Noise & RF signal that cannot be demodulated as 802.11 signal \\
+    \hline
+    SNR (Signal-to-Noise Ratio) & Signal quality metric, defined as ratio of signal power to the noise \\
+    \hline
+    SINR (Signal-to-Interference-plus-Noise Ratio) & Signal quality metric, defined as ratio of signal power to the sum of noise power and power of interefering signals \\
+    \hline
+    RSSI (Received Signal Strength Indicator) & A metric of a wireless signal quality defined in 802.11, varying from 0 to 255, where exact mappings to Rx signal power are vendor-specific. \\
+    \hline
+    Radio cell & Geographical area covered by a radio transmitter \cite{tanenbaumComputerNetworks2020} \\
+    \hline
+    Basic Service Set (BSS) & Set of stations belonging to the same radio cell and exchanging information \cite{konsgenSpectrumManagementAlgorithms2010} \\
+    \hline
+    Distribution System (DS) & Network that interconnects multiple BSSs and provides connectivity to a wired network \cite{konsgenSpectrumManagementAlgorithms2010} \\
+    \hline
+    Extended Service Set (ESS) & Set of Basic Service Sets connected by a DS \cite{konsgenSpectrumManagementAlgorithms2010} \\
+    \hline
+    Station (STA) & Client device that can connect to a wireless LAN \\
+    \hline
+    Access Point (AP) & Device providing stations wireless access to a distribution system \\
+    \hline
+    Infrastructure mode & Centralized mode of 802.11 WLAN operation using a star topology, where AP serves as a central entity for managing WLAN and switching traffic \\
+    \hline
+    Network capacity & Maximum transmission rate that any station can achieve in a given WLAN \\
+    \hline
+    Tx & Short notation for "Transmission" or "Transmit" \\
+    \hline
+    Rx & Short notation for "Receipt" or "Receive" \\
+    \hline
+\end{longtable}

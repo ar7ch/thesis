@@ -1,13 +1,13 @@
 \begin{abstract}
-As IEEE 802.11-compatible ("Wi-Fi") Wireless Local Area Networks (WLAN) become ubiquitous, the rising density of WLAN deployments leads to congestion of frequency bands and performance degradation due to interference. Thus, Radio Resource Management (RRM) algorithms for mitigating those problems become in demand, especially for large WLAN deployments.
+As IEEE 802.11 Wireless Local Area Networks (WLANs), also known as Wi-Fi, become ubiquitous, the increasing density of WLAN deployments leads to congestion of frequency bands and performance degradation due to interference. Thus, Radio Resource Management (RRM) algorithms for mitigating these problems are in demand, especially for dense WLAN deployments.
 
-While several commercial RRM solutions exist, their implementation details remain undisclosed. Moreover, such solutions are incompatible between devices produced by different vendors. At the same time, most of the previous studies have considerable obstacles for production usage.
+Although there are several commercial RRM solutions, their implementation details remain undisclosed. Moreover, such solutions are incompatible between devices produced by different vendors. At the same time, most of the previous studies have considerable obstacles for production usage.
 
-In this study, I carry out theoretical analysis of \textit{RRMGreedy}, a greedy centralized RRM algorithm used by a major Russian telecommunications vendor. I show that \textit{RRMGreedy} possess a number of flaws and tends to yield suboptimal results.
+In this study, I carry out a theoretical analysis of \textit{RRMGreedy}, a centralized and greedy RRM algorithm used by a major Russian telecommunications vendor. I show that \textit{RRMGreedy} possess a number of flaws and tends to yield suboptimal results.
 After identifying flaws of the algorithm, I propose several improvements for \textit{RRMGreedy}. The updated version of the algorithm is referred to as \textit{RRMGreedy++}. This algorithm adjusts frequency channel and transmission power parameters of access points based on physical-layer metrics, and uses WLAN Controller (WLC) as a central entity to gather data and perform computations.
 
-Additionally, this study develops a novel framework for the ns-3 network simulator that is used to implement RRMv2 alongside with other RRM algorithms.
-Simulation results demonstrate that \textit{RRMGreedy++} achieves up to a 12\% higher throughput on 2.4 GHz IEEE 802.11n networks and is able to improve signal quality, measured in SNR (Signal-to-Noise Ratio) by 10\%.
+Furthermore, this study develops a novel framework for the ns-3 network simulator that is used to implement \textit{RRMGreedy++} together with other RRM algorithms.
+The simulation results demonstrate that \textit{RRMGreedy++} achieves up to a 12\% higher throughput on 2.4 GHz IEEE 802.11n networks and is capable of improving signal quality, measured in SNR (Signal-to-Noise Ratio) by 10\%.
 
 % The RRMv2 algorithm employs unsophisticated metrics that can be obtained from the majority of OpenWRT-based Wi-Fi access points available on the market, demonstrating that the algorithm is production-ready and can be easily integrated into existing enterprise WLAN infrastructures.
 \end{abstract}

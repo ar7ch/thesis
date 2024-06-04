@@ -2,7 +2,7 @@
 \label{chap:eval}
 
 This chapter discusses the results of the study.
-Section \ref{chap:eval:sec:results} presents the results of the evaluation. Section \ref{chap:eval:sec:limitations} discusses the limitations of the study. Section \ref{chap:eval:sec:further_work} outlines the further work that can be done to improve the study. Finally, Section \ref{chap:eval:sec:conclusion} concludes the chapter.
+Section \ref{chap:eval:sec:results} summarizes the results and contribution of this study, and outlines the direction for further studies. Section \ref{chap:eval:sec:limitations} discusses the limitations of the study. Section \ref{chap:eval:sec:further_work} outlines the further work that can be done to improve the study. Finally, Section \ref{chap:eval:sec:conclusion} concludes the chapter.
 
 \section{Simulation Results}
 \label{chap:eval:sec:results}
@@ -18,12 +18,14 @@ Using the simulated environment provides a controlled and reproducible environme
 As comes from the limitations (Section \ref{chap:eval:sec:limitations}), I can identify two directions for the next research:
 \begin{enumerate}
     \item Improving the simulation model: the next steps would be to extend the simulation environment to consider more realistic scenarios. This includes employing cross-channel interference model SpectrumWifiPhy, considering the impact of hidden nodes, and introducing a wireless LAN controller (WLC) as a part of the simulated network, since current implementation works "above" the nodes, being a part of the script logic;
-    \item Implementing the RRMv2 algorithm in a real-world testbed: since the algorithm is designed with respect to constraints described in Section \ref{chap:lr:sec:conclusion}, metrics required for its operation can be obtained from the majority of OpenWRT-based Wi-Fi access points available on the market.
+    \item Experimenting with another channel selection approaches: For example, I consider channel planning using genetic algorithms \cite{raschellaEvaluationChannelAssignment2019} to be a perspective solution that is much simpler to implement compared to similar RRM solutions employing optimization;
+    \item Implementing the RRMGreedy algorithm in a real-world test bed: since the algorithm aligns with constraints described in Section \ref{chap:lr:sec:conclusion}, metrics required for its operation can be obtained from the majority of OpenWRT-based Wi-Fi access points available on the market.
 \end{enumerate}
 
 \section{Conclusion}
 \label{chap:eval:sec:conclusion}
-In this thesis, I have derived a new super-cell Radio Resource Management (RRM) algorithm, RRMv2, and implemented it using ns-3 network simulator.
-To be able to complete this, I performed analysis of another super-cell RRM algorithm, RRMGreedy, and identified its flaws. I have also implemented a local per-cell RRM algorithm, Least Congested Channel Search (LCCS), as a baseline for comparison.
-Moreover, since ns-3 does not provide facilities for implementing RRM algorithms out of the box, and since Wi-Fi station channel switching logic was not implemented as of current ns-3 release, I have introduced a completely new RRM module for ns-3 and a set of amendments into the existing codebase.
-Finally, the algorithms were using diverse simulation settings with various network topologies and traffic patterns. The results of the simulation show that RRMv2 outperforms both RRMGreedy and LCCS in terms of convergence rate, SINR, and throughput.
+In this thesis, I derived an improved version of \textit{RRMGreedy} Radio Resource Management (RRM) algorithm, \textit{RRMGreedy}, and implemented it using ns-3 network simulator.
+To be able to complete this, I performed analysis of \textit{RRMGreedy}, and identified its flaws.
+% I have also implemented a local per-cell RRM algorithm, Least Congested Channel Search (LCCS), as a baseline for comparison.
+Moreover, since ns-3 does not provide facilities for implementing RRM algorithms out of the box, and since Wi-Fi station channel switching logic was not implemented as of current ns-3 release, I have introduced a completely new RRM module for ns-3 and a set of enhancements into the existing codebase.
+Finally, the algorithms were evaluated using various simulation settings. The results of the simulation show that \textit{RRMGreedy++} outperforms \textit{RRMGreedy} in terms of SNR, and throughput. The further work in this direction would be making the simulation model more accurately represent real-world deployments, experimenting with optimization approaches and heuristics other than greedy search, and evaluating \textit{RRMGreedy} on a real-world test bed.
