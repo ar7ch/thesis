@@ -87,6 +87,7 @@ Channel Planning is implemented using the same approach found in LCCS. However, 
 
 \subsection{RRMGreedy++}
 \label{chap:impl:sec:implementation:rrmv2}
+
 TBD
 
 \section{Evaluation}
@@ -94,52 +95,70 @@ TBD
 To evaluate the performance of RRM algorithms, I have conducted a series of test cases for simulations in ns-3.
 The simulation setup is as follows.
 \subsection{Simulation settings}
+\begin{longtable}{|c|c|}
+\caption[Simulation parameters]{Simulation parameters (shared among all test cases)} \label{table
+:fifsimulation_params} \\
+\hline
+\textbf{Parameter} & \textbf{Value} \\
+\hline
+\endfirsthead
+\multicolumn{2}{@{}l}{} \\
+\hline
+\endhead
+\hline
+Frequency band & 2.4 GHz \\
+\hline
+IEEE 802.11 amendment & 802.11n \\
+\hline
+Data rate & 54 Mbit/s \\
+\hline
+Channel width & 20 MHz \\
+\hline
+\end{longtable}
+
 \begin{itemize}
     \item \textbf{Test Case 1:}
     \begin{itemize}
-        \item Frequency band: 2.4 GHz
-        \item IEEE 802.11 amendment: 802.11n;
-        \item Channel width: 20 MHz;
         \item Number of APs: 3;
         \item Number of STAs: 7;
         \item STA allocations by AP: $\{3, 2, 2\}$;
         \item Initial channel allocations by AP: $\{1, 1, 1\}$;
-        \item Initial channel allocations on stations: all start on channel 1 and then scan all channels until given SSID is found;
+        \item Initial channel allocations on stations: all start on channel 1 and until given SSID is found;
+        \item Traffic model: each AP has at least one pair of STAs, where first STA in the pair generates UDP generating traffic as UDP client, and second echoing it back to client as UDP server;
         \item Simulation time: 10s.
     \end{itemize}
 \end{itemize}
 
+\begin{longtable}{|p{6cm}|p{7cm}|}
+\caption{Test Case Configurations} \\
+\hline
+\multicolumn{2}{|p{8cm}|}
+{\textbf{Test Case 1}} \\ \hline
+\textbf{Parameter} & \textbf{Value} \\ \hline
+% \multicolumn{2}{@{}l}{} \\
+Number of APs & 3 \\ \hline
+Number of STAs & 7 \\ \hline
+Number of STA allocated for each AP & $\{3, 2, 2\}$ \\ \hline
+Initial channel allocations for APs  & $\{1, 1, 1\}$ \\ \hline
+Initial channel allocations for STAs &  $\{1, 1, 1, 1, 1, 1, 1\}$ \\ \hline
+Traffic model  & each AP has at least one pair of STAs, where first STA in the pair generates UDP traffic as client, and second echoing it back to client as UDP server \\ \hline
+Simulation time & 10s \\ \hline
+\end{longtable}
+
 \subsection{Metrics}
 I have evaluated the performance of RRM algorithms in terms of following metrics:
 \begin{itemize}
-    \item throughput;
-    \item access delay;
+    \item Total throughput of a wireless LAN;
+    \item Average delay;
+    \item Total SNR (Signal-to-Noise Ratio) of a wireless LAN;
     \item Tx busy time;
     \item Rx idle time.
 \end{itemize}
 
 \subsection{Results}
-TBD
+The results for Test Case 1 are presented below. The scenario had shown that 
 
-% \begin{longtable}{c|c|c|c|c|c}
-% \caption[This is the title I want to appear in the List of Tables]{Simulation Parameters} \label{table
-% :fifsimulation_params} \\
-% \hline
-% Test Case & Number of APs & Number of STAs & STA allocations by AP & Initial channel allocations by AP & Simulation time  \\
-% \hline
-% \endfirsthead
-% \multicolumn{2}{@{}l}{} \\
-% \hline
-% A & B \\
-% \hline
-% \endhead
-% \hline
-%  \textbf{Test Case} & \textbf{Number of APs} & \textbf{Number of STAs} & \textbf{STA allocations by AP} & \textbf{Initial channel allocations by AP} & \textbf{Simulation time} \\
-%  \hline
-%     1 & 10 & 100 & 10 & 1 & 1000s \\
-%  \hline
-% \end{longtable}
+TBD
 
 \section{Conclusion}
 \label{chap:impl:sec:conclusion}
-TBD
