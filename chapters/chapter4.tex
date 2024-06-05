@@ -15,7 +15,7 @@ The chapter is organized as follows:
 
 \section{Simulation methodology}
 \label{chap:impl:sec:simulation_method}
-In this study, I %implement LCCS,%
+In this study, I implement %LCCS,%
 RRMGreedy and RRMGreedy++ algorithms in ns-3 simulator to have a scalable, flexible (from dozens to hundreds of APs), and reproducible (unlike real-world testbeds) way to evaluate performance of different RRM algorithms under different conditions.
 
 \subsection{RRM support in ns-3}
@@ -27,7 +27,7 @@ However, this model presents several deviations from real-world scenarios.
 \begin{itemize}
     \item Most hardware, apart from high-end Cisco models, lacks a dedicated scanning interface, leading to scanning activities disrupting normal data exchanges. This interruption, referred to as \textit{"dead time,"} denotes periods when scanning supersedes the standard operation of an Access Point (AP);
     \item For mobile devices, scanning capabilities are significantly restricted to avoid draining the battery;
-    \item The \texttt{RriModule} code and its associated examples, designed for ns-3 version 3.20, are incompatible with the current ns-3 version 3.40 API and the legacy \textit{Waf} build system. As a part of my contribution, I have refactored the original source code to align with the latest ns-3 version 3.41 API, specifically updating the \texttt{RriModule} to integrate with the latest \texttt{WifiMac} ns-3 API and the \textit{CMake} build system. This adaptation ensures that modules and examples from \cite{bharadwajSimulationFrameworkRadio2017} are fully operational on the newest ns-3 version. The modified source code is publicly available on GitHub\footnote{https://github.com/ar7ch/ns-3-dev}.
+    \item The \texttt{RriModule} code and its associated examples, designed for ns-3 version 3.20, are incompatible with the current ns-3 version 3.40 API and the legacy \textit{Waf} build system. As a part of my contribution, I have refactored the original source code to align with the latest ns-3 version 3.41 API, specifically updating the \texttt{RriModule} to integrate with the latest \texttt{WifiMac} ns-3 API and the \textit{CMake} build system. This adaptation ensures that modules and examples from \cite{bharadwajSimulationFrameworkRadio2017} are fully operational on the newest ns-3 version. The modified source code is publicly available on GitHub\footnote{\url{https://github.com/ar7ch/ns-3-dev}}.
 \end{itemize}
 
 \subsection{Providing scanning capabilities in ns-3}
@@ -40,7 +40,7 @@ The \texttt{Scanner} class is invoked on \texttt{MonitorSnifferRx} event, simula
 If scheduled, the \texttt{Scanner} periodically switches to other channels for specified \textit{channel dwell period}, listening for frames. To reduce disruptions in AP's regular BSS operation, the AP returns to its operating channel after performing scan on one channel, proceeding to scan the next channel after a specified \textit{scan interval}. This behavior is also implemented in Cisco access points \cite{ciscoRadioResourceManagement}.
 Based on this frame capture, Scanner builds a table of known APs, containing information such as BSSID, operating channel, RSSI and SNR levels, and the number of client stations associated with the AP. This table is then used by the RRM algorithms to make decisions on channel and power adjustments.
 
-Another limitation I have encountered during the implementation is the lack of channel switching logic for unassociated stations that perform scans to discover an AP to associate with. Real-world stations scan all available channels within the operating bands to discover APs; however, as of the latest ns-3 version 3.41, released in February 2024, such functionality is absent in \texttt{ns3::StaWifiMac} class, which implements the logic for STA (stations) operation. Consequently, ns-3 Wi-Fi stations can only scan for APs present on the current operating channel. For instance, if both the AP and the stations are on channel 1, and the AP shifts to channel 6, the stations remain unable to scan beyond channel 1 to discover the AP's new location on channel 6. To address this problem, I have implemented a custom scanning logic, allowing stations to scan all available channels in their operating band. This modification is available in the modified source code on GitHub\footnote{https://github.com/ar7ch/ns-3-dev/commit/84c93b474796ed038e3deaf0d0a9ecfb876eb9c8}.
+Another limitation I have encountered during the implementation is the lack of channel switching logic for unassociated stations that perform scans to discover an AP to associate with. Real-world stations scan all available channels within the operating bands to discover APs; however, as of the latest ns-3 version 3.41, released in February 2024, such functionality is absent in \texttt{ns3::StaWifiMac} class, which implements the logic for STA (stations) operation. Consequently, ns-3 Wi-Fi stations can only scan for APs present on the current operating channel. For instance, if both the AP and the stations are on channel 1, and the AP shifts to channel 6, the stations remain unable to scan beyond channel 1 to discover the AP's new location on channel 6. To address this problem, I have implemented a custom scanning logic, allowing stations to scan all available channels in their operating band. This modification is available in the modified source code on GitHub\footnote{\url{https://github.com/ar7ch/ns-3-dev/commit/84c93b474796ed038e3deaf0d0a9ecfb876eb9c8}}.
 
 
 \section{Implementation}
@@ -110,26 +110,12 @@ Frequency band & 2.4 GHz \\
 \hline
 IEEE 802.11 amendment & 802.11n \\
 \hline
-Data rate & 54 Mbit/s \\
-\hline
-Channel width & 20 MHz \\
-\hline
+Data rate & 54 Mbit/s \\ \hline
+Channel width & 20 MHz \\ \hline
+Random seed & 2 \\ \hline
 \end{longtable}
 
-% \begin{itemize}
-%     \item \textbf{Test Case 1:}
-%     \begin{itemize}
-%         \item Number of APs: 3;
-%         \item Number of STAs: 7;
-%         \item STA allocations by AP: $\{3, 2, 2\}$;
-%         \item Initial channel allocations by AP: $\{1, 1, 1\}$;
-%         \item Initial channel allocations on stations: all start on channel 1 and until given SSID is found;
-%         \item Traffic model: each AP has at least one pair of STAs, where first STA in the pair generates UDP generating traffic as UDP client, and second echoing it back to client as UDP server;
-%         \item Simulation time: 10s.
-%     \end{itemize}
-% \end{itemize}
-
-\begin{longtable}{|p{6cm}|p{7cm}|}
+\begin{longtable}{|p{7cm}|p{8cm}|}
 \caption{Test Case Configurations}
 \label{table:eval_testcases} \\
 \hline
@@ -141,6 +127,7 @@ Number of APs & 3 \\ \hline
 Number of STAs & 7 \\ \hline
 Number of STA allocated for each AP & $\{3, 2, 2\}$ \\ \hline
 Initial channel allocations for APs  & $\{1, 1, 1\}$ \\ \hline
+Initial Tx power allocations for APs (dBm)  & $\{20, 20, 20\}$ \\ \hline
 Initial channel allocations for STAs & All on channel 1 \\ \hline
 Traffic model  & each AP has at least one pair of STAs, where first STA in the pair generates UDP traffic as client, and second echoing it back to client as UDP server \\ \hline
 Simulation time (seconds) & 10 \\ \hline
@@ -158,7 +145,7 @@ Initial Tx power allocations for APs (dBm)  & $\{20, 20, 20, 20\}$ \\ \hline
 Initial channel allocations for STAs &  All on channel 1 \\ \hline
 Traffic flows and traffic model  & Each AP has at least one pair of STAs, where first STA in the pair generates UDP traffic as client, and second echoing it back to client as UDP server \\ \hline
 Simulation time (seconds) & 10 \\ \hline
-Offered load per flow (Mbit/s) & 1.64 \\ \hline
+Offered load per flow (Mbit/s) & 2.73 \\ \hline
 \hline
 \multicolumn{2}{|p{8cm}|}
 {\textbf{Test Case 3}} \\ \hline
@@ -168,7 +155,7 @@ Number of APs & 8 \\ \hline
 Number of STAs & 8 \\ \hline
 Number of STA allocated for each AP & $\{6, 0, 0, 0, 0, 1, 1, 0\}$ \\ \hline
 Initial channel allocations for APs  & $\{1, 6, 6, 6, 6, 11, 11, 11\}$ \\ \hline
-Initial Tx power allocations for APs  & $\{20, 20, 20, 20, 20, 20, 20, 20\}$ \\ \hline
+Initial Tx power allocations for APs (dBm)  & $\{20, 20, 20, 20, 20, 20, 20, 20\}$ \\ \hline
 Initial channel allocations for STAs &  All on channel 1 \\ \hline
 Traffic flows and traffic model  & If an AP has more than 1 clients, then clients are split in pairs, where the first STA in the pair generates UDP traffic as client, and the second echoing it back to the client as an UDP server \\ \hline
 Simulation time (seconds) & 10 \\ \hline
@@ -197,7 +184,7 @@ Average Medium Idle Time & Total time for Wi-Fi device both not receiving and tr
 
 
 \subsection{Results}
-The simulation results are presented below in both tabular (\autoref{table:simulation_res}) and graphical forms.
+The simulation results are presented below in tabular (\autoref{table:simulation_res}) form.
 
 \begin{longtable}{|p{3.5cm}|p{2.5cm}|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
 \caption{Simulation Results}
@@ -221,145 +208,145 @@ The simulation results are presented below in both tabular (\autoref{table:simul
  RRMGreedy++ & 26.6417 & 0.0006 & 0.1715 & 1.2127 & 59.7644 \\ \hline
 \end{longtable}
 
-% tc1 plots
+% % tc1 plots
 
-\begin{figure}[!ht]
-    \centering
-    \begin{minipage}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tc1_tput.png}
-        \subcaption{Average Total WLAN Throughput}
-        \label{fig:tc1:tput}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tc1_busy.png}
-        \subcaption{Average Medium Busy Time}
-        \label{fig:tc1:busy}
-    \end{minipage}
+% \begin{figure}[!ht]
+%     \centering
+%     \begin{minipage}[b]{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{tc1_tput.png}
+%         \subcaption{Average Total WLAN Throughput}
+%         \label{fig:tc1:tput}
+%     \end{minipage}
+%     \hfill
+%     \begin{minipage}[b]{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{tc1_busy.png}
+%         \subcaption{Average Medium Busy Time}
+%         \label{fig:tc1:busy}
+%     \end{minipage}
     
-    \vspace{0.1em}
+%     \vspace{0.1em}
     
-    \begin{minipage}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tc1_idle.png}
-        \subcaption{Average Medium Idle Time}
-        \label{fig:tc1:idle}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tc1_snr.png}
-        \subcaption{Average SNR}
-        \label{fig:tc1:snr}
-    \end{minipage}
+%     \begin{minipage}[b]{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{tc1_idle.png}
+%         \subcaption{Average Medium Idle Time}
+%         \label{fig:tc1:idle}
+%     \end{minipage}
+%     \hfill
+%     \begin{minipage}[b]{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{tc1_snr.png}
+%         \subcaption{Average SNR}
+%         \label{fig:tc1:snr}
+%     \end{minipage}
     
-    \vspace{0.1em}
+%     \vspace{0.1em}
     
-    \begin{minipage}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tc1_delay.png}
-        \subcaption{Average L3 Delay}
-        \label{fig:tc1:l3delay}
-    \end{minipage}
+%     \begin{minipage}[b]{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{tc1_delay.png}
+%         \subcaption{Average L3 Delay}
+%         \label{fig:tc1:l3delay}
+%     \end{minipage}
     
-    \caption{Test Case 1 results}
-    \label{fig:tc1:plots}
-\end{figure}
+%     \caption{Test Case 1 results}
+%     \label{fig:tc1:plots}
+% \end{figure}
 
 
-% tc2 plots
-\begin{figure}[!ht]
-    \centering
-    \begin{minipage}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tc2_tput.png}
-        \subcaption{Average Total WLAN Throughput}
-        \label{fig:tc2:tput}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tc2_busy.png}
-        \subcaption{Average Medium Busy Time}
-        \label{fig:tc2:busy}
-    \end{minipage}
+% % tc2 plots
+% \begin{figure}[!ht]
+%     \centering
+%     \begin{minipage}[b]{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{tc2_tput.png}
+%         \subcaption{Average Total WLAN Throughput}
+%         \label{fig:tc2:tput}
+%     \end{minipage}
+%     \hfill
+%     \begin{minipage}[b]{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{tc2_busy.png}
+%         \subcaption{Average Medium Busy Time}
+%         \label{fig:tc2:busy}
+%     \end{minipage}
     
-    \vspace{0.1em}
+%     \vspace{0.1em}
     
-    \begin{minipage}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tc2_idle.png}
-        \subcaption{Average Medium Idle Time}
-        \label{fig:tc2:idle}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tc2_snr.png}
-        \subcaption{Average SNR}
-        \label{fig:tc2:snr}
-    \end{minipage}
+%     \begin{minipage}[b]{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{tc2_idle.png}
+%         \subcaption{Average Medium Idle Time}
+%         \label{fig:tc2:idle}
+%     \end{minipage}
+%     \hfill
+%     \begin{minipage}[b]{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{tc2_snr.png}
+%         \subcaption{Average SNR}
+%         \label{fig:tc2:snr}
+%     \end{minipage}
     
-    \vspace{0.1em}
+%     \vspace{0.1em}
     
-    \begin{minipage}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tc2_delay.png}
-        \subcaption{Average L3 Delay}
-        \label{fig:tc2:l3delay}
-    \end{minipage}
+%     \begin{minipage}[b]{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{tc2_delay.png}
+%         \subcaption{Average L3 Delay}
+%         \label{fig:tc2:l3delay}
+%     \end{minipage}
     
-    \caption{Test Case 2 results}
-    \label{fig:tc2:plots}
-\end{figure}
+%     \caption{Test Case 2 results}
+%     \label{fig:tc2:plots}
+% \end{figure}
 
-% tc3 plots
-\begin{figure}[!ht]
-    \centering
-    \begin{minipage}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tc3_tput.png}
-        \subcaption{Average Total WLAN Throughput}
-        \label{fig:tc3:tput}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tc3_busy.png}
-        \subcaption{Average Medium Busy Time}
-        \label{fig:tc3:busy}
-    \end{minipage}
+% % tc3 plots
+% \begin{figure}[!ht]
+%     \centering
+%     \begin{minipage}[b]{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{tc3_tput.png}
+%         \subcaption{Average Total WLAN Throughput}
+%         \label{fig:tc3:tput}
+%     \end{minipage}
+%     \hfill
+%     \begin{minipage}[b]{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{tc3_busy.png}
+%         \subcaption{Average Medium Busy Time}
+%         \label{fig:tc3:busy}
+%     \end{minipage}
     
-    \vspace{0.1em}
+%     \vspace{0.1em}
     
-    \begin{minipage}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tc3_idle.png}
-        \subcaption{Average Medium Idle Time}
-        \label{fig:tc3:idle}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tc3_snr.png}
-        \subcaption{Average SNR}
-        \label{fig:tc3:snr}
-    \end{minipage}
+%     \begin{minipage}[b]{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{tc3_idle.png}
+%         \subcaption{Average Medium Idle Time}
+%         \label{fig:tc3:idle}
+%     \end{minipage}
+%     \hfill
+%     \begin{minipage}[b]{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{tc3_snr.png}
+%         \subcaption{Average SNR}
+%         \label{fig:tc3:snr}
+%     \end{minipage}
     
-    \vspace{0.1em}
+%     \vspace{0.1em}
     
-    \begin{minipage}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tc3_delay.png}
-        \subcaption{Average L3 Delay}
-        \label{fig:tc3:l3delay}
-    \end{minipage}
+%     \begin{minipage}[b]{0.48\textwidth}
+%         \centering
+%         \includegraphics[width=\textwidth]{tc3_delay.png}
+%         \subcaption{Average L3 Delay}
+%         \label{fig:tc3:l3delay}
+%     \end{minipage}
     
-    \caption{Test Case 3 results}
-    \label{fig:tc3:plots}
-\end{figure}
+%     \caption{Test Case 3 results}
+%     \label{fig:tc3:plots}
+% \end{figure}
 
 
 \section{Conclusion}

@@ -367,26 +367,26 @@ Based on the analysis carried out above in this chapter, we can identify the fol
 Based on the limitations identified in Section \ref{sec:flaws}, I introduce the following improvements:
 
 \begin{enumerate}
-    \item \textbf{Continuous interference estimation}: I propose a slightly updated \textit{ChannelInterference()} implementation that differs based on how much channels overlap (Algorithm \ref{lst:channel_interfv2});
+    \item \textbf{Continuous interference estimation}: I propose a slightly updated \textit{ChannelInterference} implementation, referred to as \textit{ChannelInterference++}, that estimates interference score based on how much do channels overlap (Algorithm \ref{lst:channel_interfv2});
     \item \textbf{Updated cumulative metrics approach}:
         \begin{itemize}
-            \item \textbf{Noise floor} for \textit{FromIfaceInterference()} cumulative estimation. This affects channel selection decision, discouraging channels with high noise floor level;
+            \item \textbf{Noise floor} for \textit{OnIfaceInterference()} cumulative estimation. This affects channel selection decision, discouraging channels with high noise floor level;
             \item \textbf{Channel utilization}: cumulative interference metric now takes into account channel utilization in its simplest form: number of clients of the AP. This will discourage APs from using channels with many active clients that can be heard.
         \end{itemize}
-    \item \textbf{RRMGreedy Flow Improvements}: 
+        These improvements are used in \textit{OnIfaceInterference++} (Algorithm \ref{lst:onifaceinterfv2}). I also refactored the program to make it more simpler while preserving the behaviour. Namely, splitting signals into "inner" and "outer" ones is not reasonable. The only reason why such division can take place is \textit{TxDiff} adjustment for inner devices, and this is trivial to implement within one loop.
+    \item \textbf{RRMGreedy Flow Improvements}:
         \begin{itemize}
             \item The "$TxDiff \rightarrow \max$" phase of RRMGreedy (Step 1 of Algorithm \ref{alg:greedyRRM}) is moved after the Channel Selection part and before the Transmission Power Adjustment part;
             \item The \textit{GroupState} structure, containing the current state of \rrmG, is saved for the previous iteration of the algorithm. If the interference score increases, \textit{RRMGreedy++} aborts and returns to the previous \textit{GroupState};
             \item Iterations that yield a new group configuration with $GroupInterference < \epsilon$, where $\epsilon$ is a configurable threshold pre-defined to $\epsilon = 0.005$, are discarded.
         \end{itemize}
-    
 \end{enumerate}
 
 \begin{algorithm}[H]
-\caption{ChannelInterference v2}
+\caption{ChannelInterference++}
 \label{lst:channel_interfv2}
 \DontPrintSemicolon % Don't print semicolons at the end of each line
-\SetKwFunction{FMain}{ChannelInterference}
+\SetKwFunction{FMain}{ChannelInterferencePlusPlus}
 \SetKwProg{Fn}{Function}{:}{}
 \Fn{\FMain{$ch_1$, $ch_2$, $width = 20$}}{
     \If{$ch_1 < 36$ and $ch_2 < 36$}{ % 2.4 GHz band
@@ -405,6 +405,96 @@ Based on the limitations identified in Section \ref{sec:flaws}, I introduce the 
 }
 \end{algorithm}
 
+\begin{algorithm}[H]
+\label{lst:onifaceinterfv2}
+\caption{OnIfaceInterference++}
+\DontPrintSemicolon
+\KwIn{
+    $groupState$: table containing state of \rrmG \newline
+    $interface$: interface to calculate interference for
+    $channel$: channel to calculate interference on
+}
+\KwOut{Estimated cumulative interference score experienced by $interface$}
+
+$ifaceScanData \gets scandata[interface]$\;
+$cumInterf \gets 0$\;
+
+\tcp{Calculate interference from both inner and outer APs}
+\ForEach{otherBssid, otherSignal in groupState[interface].receivedSignals}{
+    $ciScore \gets ChannelInterference(otherSignal.RSSI, channel, interface.ChannelWidth)$\;
+    \ForEach{signal in otherChannelSignals}{
+        $sigRating \gets otherSignal.RSSI$\;
+        \If{otherBssid $\in$ groupState}{ \tcp{inner interface}
+            $sigRating \gets sigRating + groupState[otherBssid].TxDiff$\;
+        }
+        \tcp{$sigRating$ (in dBm) is normalized to $[0, 1]$ scale}
+        $sigRating \gets scale(sigRating)$\;
+        $cumInterf \gets ciScore \times (sigRating + clientsWeight\times clients[bssid].len - otherSignal.noiseFloor)$\;
+    }
+}
+
+\Return $cumInterf$\;
+\end{algorithm}
+
+\renewcommand{\algorithmcfname}{ALGORITHM}
+\SetAlFnt{\small}
+\SetAlCapFnt{\small}
+\SetAlCapNameFnt{\small}
+\LinesNumbered
+\begin{algorithm}[H]
+\caption{RRMGreedy++}
+\label{alg:greedyRRMv2}
+
+\SetKwInput{KwInput}{Input}
+\SetKwInput{KwOutput}{Output}
+\SetKwInput{KwData}{Data}
+\SetKwComment{Comment}{$\triangleright$\ }{}
+\SetKwFor{For}{for}{do}{endfor}
+\SetKwIF{If}{ElseIf}{Else}{if}{then}{else if}{else}{endif}
+\SetKwRepeat{Repeat}{repeat}{until}
+
+\DontPrintSemicolon
+
+\KwInput{
+    $\boldsymbol{scandata}$: scanning data from access points \newline
+    $\boldsymbol{G}$: set of wireless interfaces within the RRM group and its settings
+}
+\KwOutput{$\boldsymbol{resultConfig}$: final configuration for access points}
+
+\BlankLine
+groupState $\gets$ PreprocessRRMData($\boldsymbol{G}$, scandata)\;
+\BlankLine
+\tcp{Step 1: Greedy Channel Search}
+initialGroupInterference $\gets$ nil\;
+
+groupInterference $\gets$ GroupInterference(groupState)\;
+\Repeat{no improvement in groupInterference}{
+    \For{each interface in $\boldsymbol{G}$}{
+        $\boldsymbol{C_i} \gets$ available channels for interface\;
+        newChannel $\gets \argmin_{ch \in \boldsymbol{C_i}} OnIfaceInterferencePlusPlus(groupState, interface, ch)$\;
+        groupState[interface].channel $\gets$ newChannel\;
+    }
+    groupInterference $\gets$ GroupInterference(scandata)\;
+}
+\BlankLine
+\tcp{Step 2: Assume max Tx power for each interface}
+\For{each interface in $\boldsymbol{G}$}{
+    groupState[interface].TxDiff $\gets (interface.MaxTxPower - interface.TxPower)$\;
+}
+\BlankLine
+\tcp{Step 3: Greedy Transmission Power Adjustment (if enabled)}
+\Repeat{no improvement in groupInterference}{
+    \tcp{Identify the "worst interface" $interface_{worst}$ causing the greatest interference for other APs\;
+    $interface_{worst}$ $\gets \argmax_{w_i \in G} FromIfaceInterference(groupState, w_i)$\;
+    $groupState[interface_{worst}].TxDiff \gets \frac{interface_{worst}.TxPower - interface_{worst}.MinTxPower}{2}$ \;
+    groupInterference $\gets$ GroupInterference(scandata)\;
+}
+}
+\BlankLine
+\tcp{Step 4: Send configuration changes to APs}
+$\boldsymbol{resultConfig} \gets$ getUpdatedConfiguration(groupState)\;
+\Return{$\boldsymbol{resultConfig}$}\;
+\end{algorithm}
 
 
 \section{Conclusion}
