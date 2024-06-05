@@ -3,7 +3,7 @@ As IEEE 802.11 Wireless Local Area Networks (WLANs), also known as Wi-Fi, become
 
 Although there are several commercial RRM solutions, their implementation details remain undisclosed. Moreover, such solutions are incompatible between devices produced by different vendors. At the same time, most of the previous studies have considerable obstacles for production usage.
 
-In this study, I carry out a theoretical analysis of \textit{RRMGreedy}, a centralized and greedy RRM algorithm used by a major Russian telecommunications vendor. I show that \textit{RRMGreedy} possess a number of flaws and tends to yield suboptimal results.
+In this study, I perform a theoretical analysis of \textit{RRMGreedy}, a centralized RRM algorithm used by a major Russian telecommunications vendor. I show that \textit{RRMGreedy} possess a number of flaws and tends to yield suboptimal results.
 After identifying flaws of the algorithm, I propose several improvements for \textit{RRMGreedy}. The updated version of the algorithm is referred to as \textit{RRMGreedy++}. This algorithm adjusts frequency channel and transmission power parameters of access points based on physical-layer metrics, and uses WLAN Controller (WLC) as a central entity to gather data and perform computations.
 
 Furthermore, this study develops a novel framework for the ns-3 network simulator that is used to implement \textit{RRMGreedy++} together with other RRM algorithms.

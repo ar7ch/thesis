@@ -7,15 +7,16 @@ This chapter is dedicated to implementing the \textit{RRMGreedy++} algorithm des
 The chapter is organized as follows:
 \begin{itemize}
     \item Section \ref{chap:impl:sec:simulation_method} describes the simulation methodology used to evaluate the performance of RRM algorithms, and the process of adjusting ns-3 to needs of running and evaluating RRM algorithms;
-    \item Section \ref{chap:impl:sec:implementation} describes my implementation of \textit{RRMGreedy++}, \textit{RRMGreedy}, and \textit{Least Congested Channel Search} (LCCS) algorithms in ns-3;
-    \item Section \ref{chap:impl:sec:eval} presents the results of the simulation study, comparing RRM algorithms: RRMv2, RRMGreedy, and Least Congested Channel Search (LCCS), in terms of network throughput and interference;
+    \item Section \ref{chap:impl:sec:implementation} describes my implementation of \textit{RRMGreedy++}, \textit{RRMGreedy}%, and \textit{Least Congested Channel Search} (LCCS) algorithms in ns-3;
+    \item Section \ref{chap:impl:sec:eval} presents the results of the simulation study, comparing RRM algorithms: RRMGreedy and RRMGreedy++%, and Least Congested Channel Search (LCCS), in terms of network throughput and interference;
     \item Finally, Section \ref{chap:impl:sec:conclusion} concludes the chapter with a summary of the results and a discussion of the implications of the study.
 
 \end{itemize}
 
 \section{Simulation methodology}
 \label{chap:impl:sec:simulation_method}
-In this study, I implement LCCS, RRMGreedy and RRMGreedy++ algorithms in ns-3 simulator to have a scalable, flexible (from dozens to hundreds of APs), and reproducible (unlike real-world testbeds) way to evaluate performance of different RRM algorithms under different conditions.
+In this study, I %implement LCCS,%
+RRMGreedy and RRMGreedy++ algorithms in ns-3 simulator to have a scalable, flexible (from dozens to hundreds of APs), and reproducible (unlike real-world testbeds) way to evaluate performance of different RRM algorithms under different conditions.
 
 \subsection{RRM support in ns-3}
 The ns-3 simulator is a comprehensive tool for research in computer networks, modeling each layer of the OSI model and providing simulations for wired and wireless communication technologies and protocols, including LTE, Wi-Fi, and Ethernet. Nevertheless, despite its extensive capabilities, there is a limited support for simulating RRM algorithms.
@@ -46,36 +47,36 @@ Another limitation I have encountered during the implementation is the lack of c
 \label{chap:impl:sec:implementation}
 This section provides an implementation of various Radio Resource Management (RRM) strategies, utilizing the ns-3 discrete-event simulation framework.
 
-\subsection{Least Congested Channel Search (LCCS)}
-\label{chap:impl:sec:implementation:lccs}
-LCCS is a patented local per-cell algorithm described in \cite{achantaMethodApparatusLeast2006}. Essentially, it breaks down to estimating the interference level on each channel and selecting the least congested one. The algorithm is implemented in practically every home Wi-Fi router. The algorithm is simple, but it does not coordinate channel selection across multiple APs, which is crucial for performance in large-scale deployments.
-In my ns-3 LCCS implementation, I introduce \texttt{LCCSAlgo} class. Method \texttt{LCCSAlgo::Decide} perform LCCS channel switching decision and is invoked as a callback from \texttt{Scanner} class, described in Section \ref{chap:impl:sec:simulation_method:subsec:scanning}.
-Algorithm \ref{alg:lccs} describes my LCCS implementation.
+% \subsection{Least Congested Channel Search (LCCS)}
+% \label{chap:impl:sec:implementation:lccs}
+% LCCS is a patented local per-cell algorithm described in \cite{achantaMethodApparatusLeast2006}. Essentially, it breaks down to estimating the interference level on each channel and selecting the least congested one. The algorithm is implemented in practically every home Wi-Fi router. The algorithm is simple, but it does not coordinate channel selection across multiple APs, which is crucial for performance in large-scale deployments.
+% In my ns-3 LCCS implementation, I introduce \texttt{LCCSAlgo} class. Method \texttt{LCCSAlgo::Decide} perform LCCS channel switching decision and is invoked as a callback from \texttt{Scanner} class, described in Section \ref{chap:impl:sec:simulation_method:subsec:scanning}.
+% Algorithm \ref{alg:lccs} describes my LCCS implementation.
 
-\begin{algorithm}[H]
-\label{alg:lccs}
-\caption{Least Congested Channel Search}
-\DontPrintSemicolon
-\SetAlgoLined
-\SetKwInput{KwInput}{Input}
-\SetKwInput{KwOutput}{Output}
-\SetKwFunction{FMain}{LCCSAlgo::Decide}
-\SetKwProg{Fn}{Function}{:}{}
-\KwInput{\textit{scanningAP}: AP that invoked the LCCS call}
-\KwOutput{\textit{newChannel}: new channel for AP to switch to}
+% \begin{algorithm}[H]
+% \label{alg:lccs}
+% \caption{Least Congested Channel Search}
+% \DontPrintSemicolon
+% \SetAlgoLined
+% \SetKwInput{KwInput}{Input}
+% \SetKwInput{KwOutput}{Output}
+% \SetKwFunction{FMain}{LCCSAlgo::Decide}
+% \SetKwProg{Fn}{Function}{:}{}
+% \KwInput{\textit{scanningAP}: AP that invoked the LCCS call}
+% \KwOutput{\textit{newChannel}: new channel for AP to switch to}
 
-\Fn{\FMain{scanningAP}}{
-    metrics $\gets$ table that maps each channel to its metric, initially 0 for each channel\;
+% \Fn{\FMain{scanningAP}}{
+%     metrics $\gets$ table that maps each channel to its metric, initially 0 for each channel\;
 
-    \ForEach{apEntry in scanningAP.knownAps}{
-        metrics[apEntry.channel] $\gets$ \newline metric[apEntry.channel] + 1 + 10 $\times$ size(apEntry.clients)\;
-    }
-    newChannel $\gets$ argmin(metrics)\;
-    return newChannel\;
-}
-\end{algorithm}
+%     \ForEach{apEntry in scanningAP.knownAps}{
+%         metrics[apEntry.channel] $\gets$ \newline metric[apEntry.channel] + 1 + 10 $\times$ size(apEntry.clients)\;
+%     }
+%     newChannel $\gets$ argmin(metrics)\;
+%     return newChannel\;
+% }
+% \end{algorithm}
 
-Note that I intended to keep the algorithm simple to conform closer with the original flow described in \cite{achantaMethodApparatusLeast2006}. Real-world LCCS implementation tend to use more sophisticated heuristics and metrics to estimate channel congestion.
+% Note that I intended to keep the algorithm simple to conform closer with the original flow described in \cite{achantaMethodApparatusLeast2006}. Real-world LCCS implementation tend to use more sophisticated heuristics and metrics to estimate channel congestion.
 
 \subsection{RRMGreedy}
 \label{chap:impl:sec:implementation:rrmgreedy}
@@ -88,7 +89,7 @@ Channel Planning is implemented using the same approach found in LCCS. However, 
 \subsection{RRMGreedy++}
 \label{chap:impl:sec:implementation:rrmv2}
 
-TBD
+I implemented \textit{RRMGreedy++} in a class \texttt{RRMGreedyPlusPlusAlgo} derived from \texttt{RRMGreedyAlgo}. Methods \texttt{Decide()}, triggering RRM start, \texttt{OnIfaceInterference()}, and \texttt{ChannelInterference} were overriden and updated according to Algorithm.
 
 \section{Evaluation}
 \label{chap:impl:sec:eval}
@@ -141,8 +142,8 @@ Number of STA allocated for each AP & $\{3, 2, 2\}$ \\ \hline
 Initial channel allocations for APs  & $\{1, 1, 1\}$ \\ \hline
 Initial channel allocations for STAs & All on channel 1 \\ \hline
 Traffic model  & each AP has at least one pair of STAs, where first STA in the pair generates UDP traffic as client, and second echoing it back to client as UDP server \\ \hline
-Simulation time & 10s \\ \hline
-Offered load per flow (Mbit/s) & 1.64 \\ \hline
+Simulation time (seconds) & 10 \\ \hline
+Offered load per flow (Mbit/s) & 3.28 \\ \hline
 \hline
 \multicolumn{2}{|p{8cm}|}
 {\textbf{Test Case 2}} \\ \hline
@@ -163,12 +164,12 @@ Offered load per flow (Mbit/s) & 1.64 \\ \hline
 \textbf{Parameter} & \textbf{Value} \\ \hline
 % \multicolumn{2}{@{}l}{} \\
 Number of APs & 8 \\ \hline
-Number of STAs & 7 \\ \hline
-Number of STA allocated for each AP & $\{3, 2, 2, 2\}$ \\ \hline
-Initial channel allocations for APs  & $\{1, 1, 1, 1\}$ \\ \hline
-Initial Tx power allocations for APs  & $\{20, 20, 20, 20\}$ \\ \hline
+Number of STAs & 8 \\ \hline
+Number of STA allocated for each AP & $\{6, 0, 0, 0, 0, 1, 1, 0\}$ \\ \hline
+Initial channel allocations for APs  & $\{1, 6, 6, 6, 6, 11, 11, 11\}$ \\ \hline
+Initial Tx power allocations for APs  & $\{20, 20, 20, 20, 20, 20, 20, 20\}$ \\ \hline
 Initial channel allocations for STAs &  All on channel 1 \\ \hline
-Traffic flows and traffic model  & Each AP has at least one pair of STAs, where first STA in the pair generates UDP traffic as client, and second echoing it back to client as UDP server \\ \hline
+Traffic flows and traffic model  & If an AP has more than 1 clients, then clients are split in pairs, where the first STA in the pair generates UDP traffic as client, and the second echoing it back to the client as an UDP server \\ \hline
 Simulation time (seconds) & 10 \\ \hline
 Offered load per flow (Mbit/s) & 8.192 \\ \hline
 \end{longtable}
@@ -203,9 +204,9 @@ The results of simulation are presented below both in tabular (\autoref{table:si
 \hline
 \multicolumn{6}{|p{4cm}|} {\textbf{Test Case 1}} \\ \hline
 \textbf{Algorithm} & \textbf{Throughput (Mbit/s)} & \textbf{Average Delay (sec.)} & \textbf{Average Medium Busy Time (sec.)} & \textbf{Average Medium Idle Time (sec.)} & \textbf{Average SNR  (dBm)} \\ \hline
-No RRM &    11.5872     &        0.0016       &       0.4295         &     0.9292  & 1\\ \hline
-RRMGreedy   &   13.4000    &         0.0005      &        0.1343        &      1.2330 & 1\\ \hline
-RRMGreedy++ &   13.4000    &         0.0004      &        0.1225        &      1.2486 & 1\\ \hline
+No RRM          &    11.5872     &        0.0016       &       0.4295         &     0.9292  & 1\\ \hline
+RRMGreedy       &   13.4000    &         0.0005      &        0.1343        &      1.2330 & 1\\ \hline
+RRMGreedy++     &   13.4000    &         0.0004      &        0.1225        &      1.2486 & 1\\ \hline
 \hline
 \hline
 \multicolumn{6}{|p{4cm}|} {\textbf{Test Case 2}} \\ \hline
@@ -219,27 +220,75 @@ RRMGreedy++     &  16.5084       &      0.0007       &       0.1715        &    
 \hline
 \multicolumn{6}{|p{4cm}|} {\textbf{Test Case 3}} \\ \hline
 \textbf{Algorithm} & \textbf{Throughput (Mbit/s)} & \textbf{Average Delay (sec.)} & \textbf{Average Medium Busy Time (sec.)} & \textbf{Average Medium Idle Time (sec.)} & \textbf{Average SNR  (dBm)} \\ \hline
-No RRM    &    12.7737       &      0.1900       &       1.0528        &      0.2407 & 59.0256   \\
+No RRM      &    12.7737       &      0.1900       &       1.0528        &      0.2407 & 59.0256   \\
 \hline
-RRMGreedy &     46.5821      &       0.0727      &        0.4341       &       0.7978 & 66.4141   \\
+RRMGreedy   &     46.5821      &       0.0727      &        0.4341       &       0.7978 & 66.4141   \\
 \hline
 RRMGreedy++ &   48.6707      &       0.0405      &        0.4233       &       0.8132 & 73.4090   \\
 \hline
 \end{longtable}
 
+% tc1 plots
 
 \begin{figure}[!ht]
     \centering
     \begin{minipage}[b]{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{tc2_wlan_tput.png}
+        \includegraphics[width=\textwidth]{tc1_tput.png}
+        \subcaption{Average total WLAN throughput}
+        \label{fig:tc1:tput}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tc1_busy.png}
+        \subcaption{Average medium busy time}
+        \label{fig:tc1:busy}
+    \end{minipage}
+    
+    \vspace{0.1em}
+    
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tc1_idle.png}
+        \subcaption{Average medium idle time}
+        \label{fig:tc1:idle}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tc1_snr.png}
+        \subcaption{Average SNR}
+        \label{fig:tc1:snr}
+    \end{minipage}
+    
+    \vspace{0.1em}
+    
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tc1_delay.png}
+        \subcaption{Average L3 Delay}
+        \label{fig:tc1:l3delay}
+    \end{minipage}
+    
+    \caption{Test Case 1 results}
+    \label{fig:tc1:plots}
+\end{figure}
+
+
+% tc2 plots
+\begin{figure}[!ht]
+    \centering
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tc2_tput.png}
         \subcaption{Average total WLAN throughput}
         \label{fig:tc2:tput}
     \end{minipage}
     \hfill
     \begin{minipage}[b]{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{tc2_phy_busy.png}
+        \includegraphics[width=\textwidth]{tc2_busy.png}
         \subcaption{Average medium busy time}
         \label{fig:tc2:busy}
     \end{minipage}
@@ -248,7 +297,7 @@ RRMGreedy++ &   48.6707      &       0.0405      &        0.4233       &       0
     
     \begin{minipage}[b]{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{tc2_phy_idle.png}
+        \includegraphics[width=\textwidth]{tc2_idle.png}
         \subcaption{Average medium idle time}
         \label{fig:tc2:idle}
     \end{minipage}
@@ -264,7 +313,7 @@ RRMGreedy++ &   48.6707      &       0.0405      &        0.4233       &       0
     
     \begin{minipage}[b]{0.48\textwidth}
         \centering
-        \includegraphics[width=\textwidth]{tc2_l3_delay.png}
+        \includegraphics[width=\textwidth]{tc2_delay.png}
         \subcaption{Average L3 Delay}
         \label{fig:tc2:l3delay}
     \end{minipage}
@@ -273,9 +322,55 @@ RRMGreedy++ &   48.6707      &       0.0405      &        0.4233       &       0
     \label{fig:tc2:plots}
 \end{figure}
 
+% tc3 plots
+\begin{figure}[!ht]
+    \centering
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tc3_tput.png}
+        \subcaption{Average total WLAN throughput}
+        \label{fig:tc3:tput}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tc3_busy.png}
+        \subcaption{Average medium busy time}
+        \label{fig:tc3:busy}
+    \end{minipage}
+    
+    \vspace{0.1em}
+    
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tc3_idle.png}
+        \subcaption{Average medium idle time}
+        \label{fig:tc3:idle}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tc3_snr.png}
+        \subcaption{Average SNR}
+        \label{fig:tc3:snr}
+    \end{minipage}
+    
+    \vspace{0.1em}
+    
+    \begin{minipage}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tc3_delay.png}
+        \subcaption{Average L3 Delay}
+        \label{fig:tc3:l3delay}
+    \end{minipage}
+    
+    \caption{Test Case 3 results}
+    \label{fig:tc3:plots}
+\end{figure}
+
 
 \section{Conclusion}
 \label{chap:impl:sec:conclusion}
 
-Based on results, I can suggest that RRM considerably improves performance of the WLAN. That is especially evident when dealing with high offered load, as in Test Case 3. Lower Medium Busy Time and higher Medium Idle Time can be interpreted as the consequence of medium becoming less congested. Moreover, RRMGreedy and RRMGreedy++ increase total SNR of the WLAN as a result of adjusting transmission powers and switching APs to orthogonal channels.
+Based on results, I can suggest that RRM considerably improves performance of the WLAN. That is especially evident when dealing with multiple APs on a single channel and high offered load, as in Test Case 3. Lower Medium Busy Time and higher Medium Idle Time can be interpreted as the consequence of medium becoming less congested. Moreover, RRMGreedy and RRMGreedy++ increase total SNR of the WLAN as a result of adjusting transmission powers and switching APs to orthogonal channels.
 
