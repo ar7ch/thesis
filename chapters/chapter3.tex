@@ -3,25 +3,25 @@
 \chapter{Baseline solution analysis and algorithm design}
 \label{chap:research}
 
-The chapter is organized as follows. Section \ref{chap:research:sec:problem_statement} defines the problem of RRM and objectives of an RRM algorithm.
-In Section \ref{sec:baseline}, I describe the RRM algorithm called \textit{RRMGreedy}, developed by a Russian telecommunications vendor, analyze the flow and asymptotic complexity of the algorithm, and identify its flaws and limitations. The objective of this study is to create an algorithm outperforming \textit{RRMGreedy} in terms of network capacity and throughput; in Section \ref{chap:research:sec:rrmv2} I propose a new RRM algorithm, called \textit{RRMGreedy++}, that addresses the flaws of \textit{RRMGreedy}.
+The chapter is organized as follows. Section \ref{chap:research:sec:problem_statement} defines the problem of RRM and the objectives of an RRM algorithm.
+In Section \ref{sec:baseline}, I describe the RRM algorithm called \textit{RRMGreedy}, developed by a Russian telecommunications vendor, analyze the flow and asymptotic complexity of the algorithm and identify its flaws and limitations. The objective of this study is to create an algorithm outperforming \textit{RRMGreedy} in terms of network capacity and throughput; in Section \ref{chap:research:sec:rrmv2} I propose a new RRM algorithm, called \textit{RRMGreedy++}, that addresses the flaws of \textit{RRMGreedy}.
 
 
 \section{Problem statement}
 \label{chap:research:sec:problem_statement}
-Using the RRM problem definition from \ref{chap:lr:sec:math_models}, I define the problem as follows: given a set of access points $AP = \{AP_1, AP_2, \ldots, AP_n\}$, where each access point $AP_i$ has a set of wireless interfaces $W_i = \{w_{i1}, w_{i2}, \ldots, w_{im}\}$, where each interface $w_{ij}$ can operate on a set of channels $C = \{c_1, c_2, \ldots, c_k\}$, the goal is to find a channel assignment $f: W \to C$ and transmit power assignment $g: W \to P$ that maximizes network throughput and capacity. The problem can be formulated as a combinatorial optimization problem, where the goal is to find a configuration of channels and transmit powers that maximizes the objective function, which is a function of network throughput and capacity.
+Using the definition of the RRM problem from \ref{chap:lr:sec:math_models}, I define the problem as follows: given a set of access points $AP = \{AP_1, AP_2, \ldots, AP_n\}$, where each access point $AP_i$ has a set of wireless interfaces $W_i = \{w_{i1}, w_{i2}, \ldots, w_{im}\}$, where each interface $w_{ij}$ can operate on a set of channels $C = \{c_1, c_2, \ldots, c_k\}$, the goal is to find a channel assignment $f: W \to C$ and transmit power assignment $g: W \to P$ that maximizes network throughput and capacity. The problem can be formulated as a combinatorial optimization problem, where the goal is to find a configuration of channels and transmit powers that maximizes the objective function, which is a function of network throughput and capacity.
 
 \section{Baseline solution analysis --- RRMGreedy}
 \label{sec:baseline}
-The greedy RRM algorithm, used by a major telecommunications vendor, which will be further referred to as \textit{RRMGreedy}, is based on background scanning by access points. The goal of this study is to create a new RRM algorithm aligning with requirements and addressing the research gap formulated in Section \ref{chap:lr:sec:conclusion}.
-In particular, the novel algorithm should result in network throughput and capacity greater or equal than \textit{RRMGreedy} in corner cases. In this light, I start with describing \textit{RRMGreedy},
+The greedy RRM algorithm, used by a major telecommunications vendor, which will be further referred to as \textit{RRMGreedy}, is based on background scanning by access points. The goal of this study is to create a new RRM algorithm that complies with the requirements and addresses the research gap formulated in Section \ref{chap:lr:sec:conclusion}.
+In particular, the novel algorithm should result in network throughput and capacity greater or equal than \textit{RRMGreedy} in corner cases. In this light, I start with describing \textit{RRMGreedy}.
 
 \subsection{RRMGreedy: flow description}
 This section describes \textit{RRMGreedy}.
-As the name suggests, the algorithm tries to achieve optimal radio resource allocation in a greedy way, taking the local optimum for each device in a RRM group.
-The algorithm operates on the granularity of interfaces rather than access points. I consider it to be reasonable, since practically different interfaces operate on completely different frequency bands, so when are dealing with, for example, 5 GHz band, the whole access point can be considered as a single interface.
+As the name suggests, the algorithm tries to achieve optimal radio resource allocation in a greedy way, taking the local optimum for each device in an RRM group.
+The algorithm operates on the granularity of interfaces rather than access points. I consider it to be reasonable, since practically different interfaces operate on completely different frequency bands, so when are dealing with, for example, the 5 GHz band, the whole access point can be considered as a single interface.
 
-In other words, I consider \textbf{RRM group} $G$ as a set of \textbf{wireless interfaces} $w$ (that will be further referred to as simply \textbf{interfaces}), where several interfaces can belong to a single access point.
+In other words, I consider \textbf{RRM group} $G$ as a set of \textbf{wireless interfaces} $w$ (which will be further referred to as simply \textbf{interfaces}), where several interfaces can belong to a single access point.
 On a high level, the algorithm consists of two main steps --- \textbf{Channel Selection} and \textbf{Transmit Power Adjustment}:
 \everymath{\displaystyle}
 \begin{enumerate}
@@ -181,13 +181,13 @@ where:
     scale(x)    &  & normalization function \ref{eq:scale}. \\
 \end{conditions*}
 
-Transmit power is normalized to $[0,1]$ with min-max normalization using pre-defined RSSI (Received Signal Strength) thresholds $RSSI_{min}$ and $RSSI_{max}$ (\ref{eq:scale}):
+Transmit power is normalized to $[0,1]$ with min-max normalization using pre-defined RSSI (Received Signal Strength Indicator) thresholds $RSSI_{min}$ and $RSSI_{max}$ (\ref{eq:scale}):
 \begin{equation}
     \label{eq:scale}
     scale(x) = \frac{x - RSSI_{min}}{RSSI_{max} - RSSI_{min}}
 \end{equation}
 
-Interference between channels is estimated with \textit{ChannelInterference()} function(Algorithm \ref{lst:channel_interf}). It is assumed that the distance between orthogonal channels is 5 MHz. Thus, given a 2.4 GHz band and 20 MHz width, the distance between two channels should be at least 5. The interval of length $n$ should have $n-1$ channels in between, which is the reason for the $add$ factor.
+The interference between channels is estimated with \textit{ChannelInterference()} function(Algorithm \ref{lst:channel_interf}). The distance between adjacent channels is assumed to be 5 MHz. The interval of length $n$ should have $n-1$ channels in between, which is the reason for the factor $add$.
 
 
 % In other words, the algorithm is as follows:
@@ -270,7 +270,7 @@ $cumInnerInterf \gets 0$\;
 
 % \subsection{Transmit Power Control}
 
-Function \textit{FromIfaceInterference()} (Algorithm \ref{rrm:fromifaceinterf}) calculates the amount of interference originating from $w_i$ and experienced by other interfaces in the group \rrmG. The function returns two values: cumulative interference quantity estimating how much $w_i$ affects the RRM group, and maximum RSSI of $w_i$ on some other interface $w_j$. Using \textit{FromIfaceInterference()}, RRMGreedy finds the \textit{worst interference} and gradually reduces its transmit power to improve the group interference score.
+The function \textit{FromIfaceInterference()} (Algorithm \ref{rrm:fromifaceinterf}) calculates the amount of interference originating from $w_i$ and experienced by other interfaces in the group \rrmG. The function returns two values: the cumulative interference quantity, that is, how much $w_i$ affects the RRM group, and the maximum RSSI of $w_i$ on some other interface $w_j$. Using \textit{FromIfaceInterference()}, RRMGreedy finds the \textit{worst interference} and gradually reduces its transmit power to improve the group interference score.
 
 % The RRMGreedy TPC works as follows:
 % \begin{enumerate}
@@ -321,7 +321,7 @@ $maxSignal \gets MinSignal$\;
 
 \subsection{Evaluating asymptotic complexity of RRMGreedy}
 \label{chapter:research:sec:rrmgreedy:subsec:complexity}
-In this section, I evaluate asymptotic complexity of \textit{RRMGreedy} algorithm.
+In this section, I evaluate the asymptotic complexity of \textit{RRMGreedy} algorithm.
 First, I consider the complexity of used auxiliary functions:
 \begin{enumerate}
     \item $ChannelInterference(ch_1, ch_2, width)$ has constant complexity $O(1)$;
@@ -331,7 +331,7 @@ First, I consider the complexity of used auxiliary functions:
         $O(\card{G} \cdot C) = O(\card{G})$.
 \end{enumerate}
 
-Next, I analyze time complexity of the main phases of the algorithm:
+Next, I analyze the time complexity of the main phases of the algorithm:
 
 \begin{enumerate}
     \item \textbf{ProcessScanDataForGroup} has complexity $O(\card{G} \cdot \lvert S \rvert)$, where $\lvert S \rvert$ is the total number of signals in all scans from all interfaces in $G$;
@@ -364,14 +364,14 @@ Based on the analysis carried out above in this chapter, we can identify the fol
 \label{chap:research:sec:rrmv2}
 % As discussed in \ref{chap:lr:sec:rrm_approaches}, RRM algorithm, given the current state of network, that is, who can hear who and how strong, should decide on the channel and transmit power assignments for every AP, so that network capacity and throughput are maximized. For per-cell decisions, it is simple, and most of the kinds of the algorithm can fit into LCCS definition: scan each channel, get an estimate how good each channel is (using a certain metric, such as interference, number of APs operating on the same channel, etc.), and switch to the best one. On the other hand, a super-cell aims to make decisions improving the performance of the whole network. Usually this is achieved by using a cumulative metric across all cells, such as total interference, and trying to minimize it. Thus, a channel and (or) transmit power allocation that minimizes the cumulative metric should be chosen. As shown above, RRMGreedy selects channels to minimize interference at each AP, while there is an improvement cumulative metric.
 
-Founding on limitations identified in Section \ref{sec:flaws}, I introduce the following improvements:
+Based on the limitations identified in Section \ref{sec:flaws}, I introduce the following improvements:
 
 \begin{enumerate}
     \item \textbf{Continuous interference estimation}: I propose a slightly updated \textit{ChannelInterference()} implementation that differs based on how much channels overlap (Algorithm \ref{lst:channel_interfv2});
     \item \textbf{Updated cumulative metrics approach}:
         \begin{itemize}
             \item \textbf{Noise floor} for \textit{FromIfaceInterference()} cumulative estimation. This affects channel selection decision, discouraging channels with high noise floor level;
-            \item \textbf{Channel utilization}: cumulative interference metric now takes into account channel utilization in its simplest form: number of clients of the access point. This will discourage APs from using channels with many active clients that can be heard.
+            \item \textbf{Channel utilization}: cumulative interference metric now takes into account channel utilization in its simplest form: number of clients of the AP. This will discourage APs from using channels with many active clients that can be heard.
         \end{itemize}
     \item \textbf{RRMGreedy Flow Improvements}: 
         \begin{itemize}
@@ -409,4 +409,4 @@ Founding on limitations identified in Section \ref{sec:flaws}, I introduce the f
 
 \section{Conclusion}
 \label{chap:research:sec:conclusion}
-In this chapter, I have carried out analysis of a production RRM algorithm called \textit{RRMGreedy}, used by a leading Russian telecommunications vendor. By analyzing source code of \textit{RRMGreedy}, I have estimated asymptotic complexity and found several issues potentially affecting the efficiency of the algorithm. To address those issues, I propose a set of enhancements for \textit{RRMGreedy}, together called \textit{RRMGreedy++}. In Chapter \ref{chap:eval}, I proceed with experimental evaluation of the RRM algorithms, including \textit{RRMGreedy++}, by introducing a new framework for ns-3 network simulator I have created to facilitate RRM assessment.
+In this chapter, I have performed an analysis of a production RRM algorithm called \textit{RRMGreedy}, used by a leading Russian telecommunications vendor. By analyzing the source code of \textit{RRMGreedy}, I have estimated the asymptotic complexity and found several issues potentially affecting the efficiency of the algorithm. To address those issues, I propose a set of enhancements for \textit{RRMGreedy}, together called \textit{RRMGreedy++}. In Chapter \ref{chap:eval}, I proceed with experimental evaluation of the RRM algorithms, including \textit{RRMGreedy++}, by introducing a new framework for ns-3 network simulator I have created to facilitate RRM assessment.
