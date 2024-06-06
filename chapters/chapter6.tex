@@ -1,52 +1,17 @@
 \chapter{Conclusion}
 \label{chap:conclusion}
-\begin{longtable}{c|c}
-\caption[This is the title I want to appear in the List of Tables]{Simulation Parameters} \label{table:sixsimulation_params} \\
-\hline
-A & B  \\
-\hline
-\endfirsthead
-\multicolumn{2}{@{}l}{} \\
-\hline
-A & B \\
-\hline
-\endhead
-\hline
- \textbf{Parameter} & \textbf{Value}\\
- \hline
- Number of vehicles & $|\mathcal{V}|$\\
- \hline
- Number of RSUs & $|\mathcal{U}|$\\
- \hline
- RSU coverage radius & 150 m\\
- \hline
- V2V communication radius & 30 m\\
- \hline
- Smart vehicle antenna height & 1.5 m\\
- \hline
- RSU antenna height & 25 m\\
- \hline
- Smart vehicle maximum speed & $v_{max}$ m/s\\
- \hline
- Smart vehicle minimum speed & $v_{min}$ m/s\\
- \hline
- Common smart vehicle cache capacities & $[50, 100, 150, 200, 250]$ mb\\
- \hline
- Common RSU cache capacities & $[5000,1000,1500,2000,2500]$ mb\\
- \hline
- Common backhaul rates & $[75, 100, 150]$ mb/s\\
- \hline
-\end{longtable}
 
-\begin{figure}[hbt]
-\centering
-\includegraphics[]{figs/inno.png}
-\caption{One kernel at $x_s$ (\emph{dotted kernel}) or two kernels at
-$x_i$ and $x_j$ (\textit{left and right}) lead to the same summed estimate
-at $x_s$. This shows a figure consisting of different types of
-lines. Elements of the figure described in the caption should be set in
-italics, in parentheses, as shown in this sample caption.}
-\label{fig:sixex}
-\end{figure}
+In this thesis, I developed and evaluated an improved the Radio Resource Management (RRM) algorithm, \textit{RRMGreedy++}, based on \textit{RRMGreedy}. The study identified the limitations of \textit{RRMGreedy} and introduced \textit{RRMGreedy++}, leading to a 12\% improvement in bandwidth and a 10\% increase in signal-to-noise ratio. 
 
-\ldots
+Significant contributions include:
+1. Identification and improvement of \textit{RRMGreedy} flaws.
+2. Development of a novel RRM framework in ns-3.
+3. Enhanced performance of \textit{RRMGreedy++} in simulations.
+
+Limitations of the study, such as the constraints of the \texttt{YansWifiPhy} propagation model, suggest areas for further research. Future work should focus on:
+1. Enhancing the simulation model to better reflect real-world conditions.
+2. Exploring alternative channel selection methods, such as genetic algorithms.
+3. Implementing and testing \textit{RRMGreedy++} in real-world environments.
+
+In summary, \textit{RRMGreedy++} demonstrates significant potential for improving radio resource utilization, with future work aimed at further refinement and real-world validation.
+

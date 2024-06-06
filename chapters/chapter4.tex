@@ -1,4 +1,4 @@
-\chapter{Implementation and evaluation}
+\chapter{Implementation and Evaluation}
 \label{chap:impl}
 
 
@@ -208,149 +208,14 @@ The simulation results are presented below in tabular (\autoref{table:simulation
  RRMGreedy++ & 26.6417 & 0.0006 & 0.1715 & 1.2127 & 59.7644 \\ \hline
 \end{longtable}
 
-% % tc1 plots
-
-% \begin{figure}[!ht]
-%     \centering
-%     \begin{minipage}[b]{0.48\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{tc1_tput.png}
-%         \subcaption{Average Total WLAN Throughput}
-%         \label{fig:tc1:tput}
-%     \end{minipage}
-%     \hfill
-%     \begin{minipage}[b]{0.48\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{tc1_busy.png}
-%         \subcaption{Average Medium Busy Time}
-%         \label{fig:tc1:busy}
-%     \end{minipage}
-    
-%     \vspace{0.1em}
-    
-%     \begin{minipage}[b]{0.48\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{tc1_idle.png}
-%         \subcaption{Average Medium Idle Time}
-%         \label{fig:tc1:idle}
-%     \end{minipage}
-%     \hfill
-%     \begin{minipage}[b]{0.48\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{tc1_snr.png}
-%         \subcaption{Average SNR}
-%         \label{fig:tc1:snr}
-%     \end{minipage}
-    
-%     \vspace{0.1em}
-    
-%     \begin{minipage}[b]{0.48\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{tc1_delay.png}
-%         \subcaption{Average L3 Delay}
-%         \label{fig:tc1:l3delay}
-%     \end{minipage}
-    
-%     \caption{Test Case 1 results}
-%     \label{fig:tc1:plots}
-% \end{figure}
-
-
-% % tc2 plots
-% \begin{figure}[!ht]
-%     \centering
-%     \begin{minipage}[b]{0.48\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{tc2_tput.png}
-%         \subcaption{Average Total WLAN Throughput}
-%         \label{fig:tc2:tput}
-%     \end{minipage}
-%     \hfill
-%     \begin{minipage}[b]{0.48\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{tc2_busy.png}
-%         \subcaption{Average Medium Busy Time}
-%         \label{fig:tc2:busy}
-%     \end{minipage}
-    
-%     \vspace{0.1em}
-    
-%     \begin{minipage}[b]{0.48\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{tc2_idle.png}
-%         \subcaption{Average Medium Idle Time}
-%         \label{fig:tc2:idle}
-%     \end{minipage}
-%     \hfill
-%     \begin{minipage}[b]{0.48\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{tc2_snr.png}
-%         \subcaption{Average SNR}
-%         \label{fig:tc2:snr}
-%     \end{minipage}
-    
-%     \vspace{0.1em}
-    
-%     \begin{minipage}[b]{0.48\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{tc2_delay.png}
-%         \subcaption{Average L3 Delay}
-%         \label{fig:tc2:l3delay}
-%     \end{minipage}
-    
-%     \caption{Test Case 2 results}
-%     \label{fig:tc2:plots}
-% \end{figure}
-
-% % tc3 plots
-% \begin{figure}[!ht]
-%     \centering
-%     \begin{minipage}[b]{0.48\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{tc3_tput.png}
-%         \subcaption{Average Total WLAN Throughput}
-%         \label{fig:tc3:tput}
-%     \end{minipage}
-%     \hfill
-%     \begin{minipage}[b]{0.48\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{tc3_busy.png}
-%         \subcaption{Average Medium Busy Time}
-%         \label{fig:tc3:busy}
-%     \end{minipage}
-    
-%     \vspace{0.1em}
-    
-%     \begin{minipage}[b]{0.48\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{tc3_idle.png}
-%         \subcaption{Average Medium Idle Time}
-%         \label{fig:tc3:idle}
-%     \end{minipage}
-%     \hfill
-%     \begin{minipage}[b]{0.48\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{tc3_snr.png}
-%         \subcaption{Average SNR}
-%         \label{fig:tc3:snr}
-%     \end{minipage}
-    
-%     \vspace{0.1em}
-    
-%     \begin{minipage}[b]{0.48\textwidth}
-%         \centering
-%         \includegraphics[width=\textwidth]{tc3_delay.png}
-%         \subcaption{Average L3 Delay}
-%         \label{fig:tc3:l3delay}
-%     \end{minipage}
-    
-%     \caption{Test Case 3 results}
-%     \label{fig:tc3:plots}
-% \end{figure}
-
-
 \section{Conclusion}
 \label{chap:impl:sec:conclusion}
 
-Based on the results, I can suggest that RRM considerably improves the performance of the WLAN. That is especially evident when dealing with multiple APs on a single channel and high offered load, as in Test Case 3. The lower medium busy time and the higher medium idle time can be interpreted as the consequence of the medium becoming less congested. Moreover, RRMGreedy and RRMGreedy++ increase the total SNR of the WLAN as a result of adjusting the transmission power and switching APs to orthogonal channels.
+Based on the results, I can suggest that RRM considerably improves the performance of the WLAN.
+One can see the tremendous improvement of throughput when APs were moved to another channel in Test Case 2.
+Since the allocation is trivial in this case --- 3 APs, 3 orthogonal channels available --- the metrics for \textit{RRMGreedy} and \textit{RRMGreedy++} are almost the same.
+
+That is especially evident when dealing with multiple APs on a single channel and high offered load, as in Test Case 3. The lower medium busy time and the higher medium idle time can be interpreted as the consequence of the medium becoming less congested. 
+
+Moreover, RRMGreedy and RRMGreedy++ increase the total SNR of the WLAN as a result of adjusting the transmission power and switching APs to orthogonal channels.
 
